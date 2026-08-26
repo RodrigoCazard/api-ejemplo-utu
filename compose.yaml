@@ -1,4 +1,4 @@
-name: api-simple
+﻿name: api-simple
 
 services:
   database:
@@ -15,42 +15,42 @@ services:
       - mysql_data:/var/lib/mysql
 
       # MySQL ejecuta este archivo solamente la primera vez que crea el volumen.
-      - ./nivel-2/database.sql:/docker-entrypoint-initdb.d/01-database.sql:ro
+      - ./api-completa/database.sql:/docker-entrypoint-initdb.d/01-database.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
       interval: 5s
       timeout: 5s
       retries: 20
 
-  nivel-1:
+  api-simple:
     build:
       context: .
       dockerfile: docker/php-apache/Dockerfile
       args:
-        APP_DIR: nivel-1
+        APP_DIR: api-simple
     environment:
       APP_ENV: ${APP_ENV:-production}
-      SECRET_KEY: "${SECRET_KEY:?Copiá .env.docker.example a .env y configurá SECRET_KEY}"
+      SECRET_KEY: "${SECRET_KEY:?Copia .env.docker.example a .env y configura SECRET_KEY}"
       TOKEN_LIFETIME: ${TOKEN_LIFETIME:-3600}
       DB_HOST: database
       DB_NAME: utu_demo
       DB_USER: utu_user
       DB_PASSWORD: ${DB_PASSWORD:-utu_password}
     ports:
-      - "${NIVEL_1_PORT:-8001}:80"
+      - "${API_SIMPLE_PORT:-8001}:80"
     depends_on:
       database:
         condition: service_healthy
 
-  nivel-2:
+  api-completa:
     build:
       context: .
       dockerfile: docker/php-apache/Dockerfile
       args:
-        APP_DIR: nivel-2
+        APP_DIR: api-completa
     environment:
       APP_ENV: ${APP_ENV:-production}
-      SECRET_KEY: "${SECRET_KEY:?Copiá .env.docker.example a .env y configurá SECRET_KEY}"
+      SECRET_KEY: "${SECRET_KEY:?Copia .env.docker.example a .env y configura SECRET_KEY}"
       TOKEN_LIFETIME: ${TOKEN_LIFETIME:-3600}
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
       DB_HOST: database
@@ -58,38 +58,7 @@ services:
       DB_USER: utu_user
       DB_PASSWORD: ${DB_PASSWORD:-utu_password}
     ports:
-      - "${NIVEL_2_PORT:-8002}:80"
-    depends_on:
-      database:
-        condition: service_healthy
-
-  nivel-3:
-    build:
-      context: .
-      dockerfile: docker/laravel/Dockerfile
-    environment:
-      APP_NAME: "API Productos UTU - Nivel 3"
-      APP_ENV: ${APP_ENV:-production}
-      APP_KEY: "${LARAVEL_APP_KEY:?Configurá LARAVEL_APP_KEY en el .env de la raíz}"
-      APP_DEBUG: ${LARAVEL_APP_DEBUG:-false}
-      APP_URL: http://localhost:${NIVEL_3_PORT:-8003}
-      DB_CONNECTION: mysql
-      DB_HOST: database
-      DB_PORT: 3306
-      DB_DATABASE: utu_demo
-      DB_USERNAME: utu_user
-      DB_PASSWORD: ${DB_PASSWORD:-utu_password}
-      CACHE_STORE: file
-      SESSION_DRIVER: file
-      SESSION_COOKIE: nivel_3_session
-      SESSION_HTTP_ONLY: "true"
-      SESSION_SECURE_COOKIE: ${LARAVEL_SESSION_SECURE:-false}
-      SESSION_SAME_SITE: lax
-      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
-      SANCTUM_STATEFUL_DOMAINS: localhost:5173,localhost:${NIVEL_3_PORT:-8003},127.0.0.1:5173,127.0.0.1:${NIVEL_3_PORT:-8003}
-      QUEUE_CONNECTION: sync
-    ports:
-      - "${NIVEL_3_PORT:-8003}:80"
+      - "${API_COMPLETA_PORT:-8002}:80"
     depends_on:
       database:
         condition: service_healthy

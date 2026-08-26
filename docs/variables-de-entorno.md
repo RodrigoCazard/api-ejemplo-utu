@@ -2,30 +2,30 @@
 
 ## El problema que resuelve
 
-Un programa necesita datos que **no son parte del código**: una clave secreta,
-la contraseña de una base de datos, la dirección de un servidor. Esos datos
-tienen dos problemas si los escribís directo en el código:
+Un programa necesita datos que **no son parte del codigo**: una clave secreta,
+la contrasena de una base de datos, la direccion de un servidor. Esos datos
+tienen dos problemas si los escribis directo en el codigo:
 
-1. **Cambian según dónde corra el programa.** En tu computadora la base se
+1. **Cambian segun donde corra el programa.** En tu computadora la base se
    llama de una forma, en la del profesor de otra, y en un servidor real de
-   otra distinta. Si el dato está *adentro* del código, hay que editar el
-   código cada vez que cambia de máquina.
-2. **Algunos son secretos.** Si subís el código a GitHub (o a cualquier lado)
-   y la clave está escrita ahí adentro, ya no es secreta: la puede leer
+   otra distinta. Si el dato esta *adentro* del codigo, hay que editar el
+   codigo cada vez que cambia de maquina.
+2. **Algunos son secretos.** Si subis el codigo a GitHub (o a cualquier lado)
+   y la clave esta escrita ahi adentro, ya no es secreta: la puede leer
    cualquiera que vea el repositorio.
 
-La solución: esos datos no van en el código, van en un archivo aparte que
-**cada máquina tiene el suyo** y que **nunca se sube** al control de
+La solucion: esos datos no van en el codigo, van en un archivo aparte que
+**cada maquina tiene el suyo** y que **nunca se sube** al control de
 versiones. Ese archivo es el `.env`.
 
-## Cómo se usa en este proyecto
+## Como se usa en este proyecto
 
 Hay dos archivos parecidos, y la diferencia entre ellos es la que importa:
 
-| Archivo | ¿Qué tiene? | ¿Se sube a git? |
+| Archivo | ?Que tiene? | ?Se sube a git? |
 |---|---|---|
-| `.env.example` | los NOMBRES de las variables, con valores de ejemplo | **sí** |
-| `.env` | los valores REALES de esta máquina | **no** (está en `.gitignore`) |
+| `.env.example` | los NOMBRES de las variables, con valores de ejemplo | **si** |
+| `.env` | los valores REALES de esta maquina | **no** (esta en `.gitignore`) |
 
 Cuando alguien baja el proyecto por primera vez, hace:
 
@@ -34,14 +34,14 @@ cp .env.example .env        # Linux/Mac
 copy .env.example .env      # Windows
 ```
 
-Y después edita su `.env` con sus propios valores (por ejemplo, genera su
-propia `SECRET_KEY`). El `.env.example` le sirvió de "receta": le dijo
-exactamente qué variables tenía que definir, sin revelarle ningún secreto de
+Y despues edita su `.env` con sus propios valores (por ejemplo, genera su
+propia `SECRET_KEY`). El `.env.example` le sirvio de "receta": le dijo
+exactamente que variables tenia que definir, sin revelarle ningun secreto de
 otra persona.
 
 ## El formato
 
-Un `.env` es texto plano, una variable por línea:
+Un `.env` es texto plano, una variable por linea:
 
 ```
 CLAVE=valor
@@ -50,28 +50,28 @@ OTRA_CLAVE=otro valor
 ```
 
 Sin comillas, sin espacios alrededor del `=` (aunque si los hay, este
-proyecto los saca solo). Nada más.
+proyecto los saca solo). Nada mas.
 
-## Cómo llegan esos valores al código
+## Como llegan esos valores al codigo
 
-PHP no lee `.env` solo — hay que decirle cómo. En
-[config.php](../nivel-2/config.php)
-hay una función `loadEnv()` que lo hace:
+PHP no lee `.env` solo - hay que decirle como. En
+[config.php](../api-completa/config.php)
+hay una funcion `loadEnv()` que lo hace:
 
 ```php
 loadEnv(__DIR__ . '/.env');
 ```
 
-Ese archivo lee cada línea del `.env`, la separa en clave y valor, y los dos
-los guarda con `putenv()`. A partir de ahí, **cualquier parte del proyecto**
+Ese archivo lee cada linea del `.env`, la separa en clave y valor, y los dos
+los guarda con `putenv()`. A partir de ahi, **cualquier parte del proyecto**
 puede leer esos valores con `getenv('SECRET_KEY')`, o con el ayudante que
-también está en `config.php`:
+tambien esta en `config.php`:
 
 ```php
-env('SECRET_KEY')                 // el valor, o null si no está
-env('TOKEN_LIFETIME', 3600)       // el valor, o 3600 si no está
+env('SECRET_KEY')                 // el valor, o null si no esta
+env('TOKEN_LIFETIME', 3600)       // el valor, o 3600 si no esta
 env('FRONTEND_ORIGIN', 'http://localhost:5173')
-env('APP_ENV', 'production')      // entorno; si falta, usa el más seguro
+env('APP_ENV', 'production')      // entorno; si falta, usa el mas seguro
 ```
 
 Y `config.php` los convierte en las constantes que usa el resto del proyecto:
@@ -80,54 +80,56 @@ Y `config.php` los convierte en las constantes que usa el resto del proyecto:
 define('SECRET_KEY', env('SECRET_KEY'));
 ```
 
-## Desarrollo y producción con `APP_ENV`
+## Desarrollo y produccion con `APP_ENV`
 
-La misma aplicación puede necesitar un comportamiento distinto según dónde
-esté ejecutándose. Para eso se usa:
+La misma aplicacion puede necesitar un comportamiento distinto segun donde
+este ejecutandose. Para eso se usa:
 
 ```env
 APP_ENV=development
 ```
 
-- `development` habilita información útil para aprender: `GET /` enumera los
+- `development` habilita configuracion util para aprender y depurar.
   endpoints y las cuentas locales de prueba.
-- `production` entrega una respuesta mínima en `GET /` y no publica esos
+- `production` no publica endpoints de ayuda ni datos de prueba.
   datos.
 
-`config.php` acepta únicamente esos dos valores. Si `APP_ENV` no está definida,
-elige `production`: ante una configuración incompleta es preferible revelar
-menos información.
+`config.php` acepta unicamente esos dos valores. Si `APP_ENV` no esta definida,
+elige `production`: ante una configuracion incompleta es preferible revelar
+menos informacion.
 
-Esta separación no vuelve segura una ruta por ocultarla. Todas las rutas deben
-seguir validando autenticación, roles y datos de entrada. Además, las cuentas
-de demostración deben eliminarse o reemplazarse antes de publicar la API.
+Esta separacion no vuelve segura una ruta por ocultarla. Todas las rutas deben
+seguir validando autenticacion, roles y datos de entrada. Ademas, las cuentas
+de demostracion deben eliminarse o reemplazarse antes de publicar la API.
 
-`loadEnv()` no tiene nada específico de esta API — es una función genérica de
-20 líneas. **La pueden copiar tal cual al principio de cualquier otro
-proyecto PHP** para tener soporte de `.env` sin instalar ninguna librería.
+`loadEnv()` no tiene nada especifico de esta API - es una funcion generica de
+20 lineas. **La pueden copiar tal cual al principio de cualquier otro
+proyecto PHP** para tener soporte de `.env` sin instalar ninguna libreria.
 (Proyectos grandes en general usan una ya hecha, `vlucas/phpdotenv`, que hace
-lo mismo pero con más casos cubiertos.)
+lo mismo pero con mas casos cubiertos.)
 
-## "Fallar rápido"
+## "Fallar rapido"
 
 Fijate que `config.php` no se queda callado si falta la clave:
 
 ```php
 if (!SECRET_KEY || SECRET_KEY === 'cambiame-por-una-clave-generada-al-azar') {
-    die('Falta configurar SECRET_KEY en el archivo .env (mirá .env.example).');
+    die('Falta configurar SECRET_KEY en el archivo .env (mira .env.example).');
 }
 ```
 
 Es mejor que la API **no arranque** a que arranque funcionando pero insegura
-sin que nadie se entere. A esta idea se le llama *fail fast* (fallar rápido):
+sin que nadie se entere. A esta idea se le llama *fail fast* (fallar rapido):
 si algo importante falta, avisar de inmediato y fuerte, no dejar que el
-problema aparezca después, escondido, en producción.
+problema aparezca despues, escondido, en produccion.
 
 ## Resumen para no errarle
 
-- `.env` → secretos y config de esta máquina → **nunca se sube a git**.
-- `.env.example` → la plantilla, sin secretos → **sí se sube**.
+- `.env` ? secretos y config de esta maquina ? **nunca se sube a git**.
+- `.env.example` ? la plantilla, sin secretos ? **si se sube**.
 - En esta API tradicional, `index.php` se ejecuta y lee `.env` en cada
-  petición. Normalmente no hace falta reiniciar `php -S` después de cambiarlo.
-- Si borrás el `.env` por accidente, no perdiste nada importante del código:
-  lo volvés a crear copiando `.env.example`.
+  peticion. Normalmente no hace falta reiniciar `php -S` despues de cambiarlo.
+- Si borras el `.env` por accidente, no perdiste nada importante del codigo:
+  lo volves a crear copiando `.env.example`.
+
+

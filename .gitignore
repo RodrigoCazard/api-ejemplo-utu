@@ -1,7 +1,11 @@
-# Secretos y config local: cada máquina tiene el suyo.
-# (sin "/" adelante: aplica tanto a nivel-1/.env como a nivel-2/.env)
+# Secretos y config local: cada mÃ¡quina tiene el suyo.
+# (sin "/" adelante: aplica tanto a api-simple/.env como a api-completa/.env)
 .env
 
-# Librerías de Composer: se reconstruyen con "composer install".
-# (idem, aplica a nivel-1/vendor/ y a nivel-2/vendor/)
+# LibrerÃ­as de Composer: se reconstruyen con "composer install".
+# (idem, aplica a api-simple/vendor/ y a api-completa/vendor/)
 vendor/
+
+# Archivos generados al ejecutar la API localmente.
+**/storage/*.json
+

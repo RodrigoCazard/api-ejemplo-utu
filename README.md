@@ -1,57 +1,121 @@
-# API REST en PHP — proyecto para aprender
+# API REST en PHP - proyecto para aprender
 
-Una API de productos (login, roles, CRUD completo y MySQL), armada tres veces
-con distinto nivel de herramientas. Cada carpeta es
-una app **completamente independiente** en código — copiá cualquiera,
-importale su `database.sql` a un MySQL y anda sola.
+Este proyecto muestra una API de productos hecha en PHP y MySQL. La idea es avanzar de a poco: primero una version simple y despues una version mas completa.
 
-| Nivel | Carpeta | Cómo enruta | Autenticación y entrada |
+Quedan solo dos aplicaciones:
+
+| Aplicacion | Carpeta | Idea principal | Puerto Docker |
 |---|---|---|---|
-| 1 | [nivel-1/](nivel-1) | `switch` gigante en `index.php` | JWT en `Authorization`; validación en controllers |
-| 2 | [nivel-2/](nivel-2) | clase `Router` + tabla de rutas | cookie HttpOnly; validators y DTOs |
-| 3 | [nivel-3/](nivel-3) | rutas de Laravel 13 | Sanctum SPA: sesión, cookie HttpOnly y CSRF |
+| API simple | `api-simple/` | Muestra el recorrido de una request de forma directa. No tiene rate limiter. | <http://localhost:8001> |
+| API completa | `api-completa/` | Ordena mejor el proyecto con `Router`, middleware, DTOs, validators, cookie HttpOnly y rate limiter con Symfony. | <http://localhost:8002> |
 
-La idea es recorrerlos en orden: en nivel 1, `index.php` muestra de forma
-explícita cómo se elige cada controller; nivel 2 muestra por qué conviene sacar
-el enrutado, la autenticación y la validación a componentes específicos cuando
-la aplicación empieza a crecer. Nivel 3 permite comparar ese trabajo manual con
-las herramientas que ya ofrece un framework.
+El material queda enfocado en dos aplicaciones: una simple para empezar y una completa para ver una estructura mas ordenada.
 
-Cada carpeta tiene su propio README con el detalle de cómo levantarla, sus
-endpoints y las decisiones propias de ese nivel. El README de
-[nivel-2](nivel-2/README.md) profundiza en las capas, los DTOs, los validators,
-las cookies y el middleware.
+## Estructura
 
-> [!CAUTION]
-> Nivel 3 fue creado con ayuda de inteligencia artificial y puede contener
-> errores. Quien decida usar Laravel debe investigar, experimentar y aprender
-> por su cuenta con la [documentación oficial](https://laravel.com/docs/13.x),
-> no copiar el resultado sin comprenderlo.
-
-## Levantar todo con Docker
-
-Con Docker Desktop abierto no hace falta instalar PHP, Composer ni MySQL en la
-computadora.
-
-### 1. Descargar el proyecto
-
-Si todavía no lo tenés:
-
-```powershell
-git clone https://github.com/RodrigoCazard/api-simple.git
-cd api-simple
+```text
+api-simple/
+  api-simple/
+  api-completa/
+  docker/
+  docs/
+  compose.yaml
+  README.md
 ```
 
-Todos los comandos siguientes se ejecutan desde esa carpeta raíz, donde está
-`compose.yaml`.
+## Que aprende cada aplicacion
 
-### 2. Crear la configuración local
+### API simple
+
+Carpeta:
+
+```text
+api-simple/
+```
+
+Sirve para ver:
+
+- como entra una peticion por `index.php`
+- como se lee el metodo HTTP
+- como se lee la ruta pedida
+- como un `switch` decide que controller ejecutar
+- como un controller llama a un service
+- como un service llama a un repository
+- como se responde JSON
+- como se usa un token Bearer en el header `Authorization`
+- que esta version no tiene rate limiter, para mantener visible el recorrido
+
+Ejemplos:
+
+```text
+GET  http://localhost:8001/productos
+POST http://localhost:8001/login
+GET  http://localhost:8001/perfil
+```
+
+En esta aplicacion, el login devuelve un token en el JSON. El cliente debe mandarlo despues asi:
+
+```text
+Authorization: Bearer TOKEN_AQUI
+```
+
+### API completa
+
+Carpeta:
+
+```text
+api-completa/
+```
+
+Esta version muestra como ordenar una API cuando empieza a crecer.
+
+Agrega:
+
+- archivo `routes.php` con todas las rutas
+- clase `Router`
+- controller base
+- DTOs para transportar datos
+- validators para validar entrada
+- middleware de autenticacion
+- cookie `HttpOnly` para guardar el token
+- rate limiter con `symfony/rate-limiter` para limitar demasiadas peticiones
+
+Ejemplos:
+
+```text
+GET  http://localhost:8002/productos
+POST http://localhost:8002/login
+GET  http://localhost:8002/perfil
+POST http://localhost:8002/logout
+```
+
+En esta aplicacion, el token no se copia manualmente. El backend lo guarda en una cookie `HttpOnly`.
+
+## Levantar con Docker
+
+Con Docker Desktop abierto, desde la raiz del proyecto:
+
+```powershell
+docker compose up --build
+```
+
+Cuando termine, las APIs quedan disponibles en estos puertos:
+
+| Servicio | URL |
+|---|---|
+| API simple | `http://localhost:8001/productos` |
+| API completa | `http://localhost:8002/productos` |
+| MySQL | `localhost:3307` |
+
+## Configuracion local
+
+Si todavia no existe `.env`, copiar el ejemplo:
 
 ```powershell
 Copy-Item .env.docker.example .env
 ```
 
-Generá una clave aleatoria desde PowerShell:
+Generar una clave secreta para firmar tokens:
 
 ```powershell
 $bytes = [byte[]]::new(32)
@@ -59,211 +123,77 @@ $bytes = [byte[]]::new(32)
 [BitConverter]::ToString($bytes).Replace('-', '').ToLower()
 ```
 
-Copiá el resultado después de `SECRET_KEY=` dentro del nuevo archivo `.env`:
+Copiar el resultado en `.env`:
 
 ```env
 SECRET_KEY=aca_va_la_clave_generada
 APP_ENV=development
 ```
 
-Laravel utiliza otra clave para cifrado general. Generala también desde
-PowerShell; no hace falta instalar Laravel localmente:
+## Usuarios de prueba
 
-```powershell
-$laravelBytes = [byte[]]::new(32)
-[Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($laravelBytes)
-'base64:' + [Convert]::ToBase64String($laravelBytes)
-```
+| Email | Contrasena | Rol |
+|---|---|---|
+| `admin@utu.edu.uy` | `admin123` | `admin` |
+| `alumno@utu.edu.uy` | `alumno123` | `usuario` |
 
-Copiá el resultado completo (`base64:...`) en:
+## Orden recomendado para aprender
 
-```env
-LARAVEL_APP_KEY=base64:resultado_generado
-```
+1. Abrir `api-simple/index.php`.
+2. Seguir una ruta simple como `GET /productos`.
+3. Ver `ProductController`, `ProductService` y `ProductRepository`. (En ese orden)
+4. Probar login en API simple y ver el token Bearer.
+5. Pasar a `api-completa/routes.php`.
+6. Comparar el `switch` de API simple con el `Router` de API completa.
+7. Ver DTOs, validators, middleware y cookie HttpOnly.
 
-No dejes esa variable vacía. El `.env` contiene la configuración local y Git lo
-ignora para evitar que se publiquen secretos.
+## Comandos utiles
 
-`APP_ENV` distingue el entorno donde corre la API:
-
-- `development`: pensado para estudiar y depurar; `GET /` muestra endpoints y
-  cuentas de prueba.
-- `production`: pensado para un servidor público; `GET /` responde solamente
-  que la API está funcionando.
-
-Antes de publicar la aplicación cambiá `APP_ENV=production`, eliminá las
-cuentas de demostración, usá credenciales reales, activá HTTPS y configurá
-`LARAVEL_SESSION_SECURE=true`. Ocultar la ayuda de `/` no reemplaza los
-controles de autenticación y permisos de cada endpoint.
-
-### 3. Construir y levantar los containers
-
-```powershell
-docker compose up --build
-```
-
-La primera ejecución descarga las imágenes, instala las dependencias con
-Composer y crea las tablas con sus datos de ejemplo. Cuando aparezcan los logs
-de Apache y MySQL, quedan disponibles:
-
-| Servicio | Dirección desde la computadora |
-|---|---|
-| Nivel 1 | <http://localhost:8001> |
-| Nivel 2 | <http://localhost:8002> |
-| Nivel 3 (Laravel) | <http://localhost:8003> |
-| MySQL | `localhost:3307` |
-
-Los containers se comunican con MySQL mediante el nombre interno `database`;
-por eso no se cambia `DB_HOST` manualmente.
-
-### 4. Comprobar que estén funcionando
-
-Dejá la terminal anterior abierta y abrí otra en la raíz del proyecto:
+Ver containers:
 
 ```powershell
 docker compose ps
 ```
 
-Deberían aparecer `database`, `nivel-1` y `nivel-2` con estado `Up`; la base
-también debería indicar `healthy`.
-
-Con `APP_ENV=development`, abrí estas direcciones en el navegador:
-
-- <http://localhost:8001> — ayuda de nivel 1.
-- <http://localhost:8001/productos> — cinco productos desde nivel 1.
-- <http://localhost:8002> — ayuda de nivel 2.
-- <http://localhost:8002/productos> — cinco productos desde nivel 2.
-- <http://localhost:8003> — ayuda de Laravel y advertencia educativa.
-- <http://localhost:8003/api/productos> — productos desde nivel 3.
-
-Los usuarios iniciales son:
-
-| Email | Contraseña | Rol |
-|---|---|---|
-| `admin@utu.edu.uy` | `admin123` | `admin` |
-| `alumno@utu.edu.uy` | `alumno123` | `usuario` |
-
-## Probar nivel 3: Sanctum SPA con sesión y CSRF
-
-Nivel 3 no devuelve un token. Primero hay que pedir
-`/sanctum/csrf-cookie`, después iniciar sesión y conservar las cookies que
-Laravel envía con `Set-Cookie`. La cookie `nivel_3_session` es `HttpOnly`.
-
-El flujo completo para Axios, PowerShell y REST Client está explicado en el
-[README de nivel 3](nivel-3/README.md#autenticación-spa-con-sanctum).
-
-## Probar nivel 2: cookie HttpOnly
-
-La opción más sencilla es abrir [peticiones.http](nivel-2/peticiones.http) en
-VS Code con la extensión **REST Client**.
-
-Como Docker publica nivel 2 en el puerto 8002, cambiá la variable inicial por:
-
-```http
-@url = http://localhost:8002
-```
-
-Después ejecutá los pedidos en este orden:
-
-1. `LOGIN como administrador`.
-2. `MI PERFIL`.
-3. Cualquier creación, modificación o venta de productos.
-4. `LOGOUT`.
-5. `MI PERFIL sin iniciar sesión`, que ahora debe responder `401`.
-
-REST Client conserva automáticamente la cookie creada por el login. El JWT no
-aparece en el JSON ni se copia manualmente porque está dentro de una cookie
-`HttpOnly`.
-
-También se puede comprobar desde PowerShell:
-
-```powershell
-$body = @{
-    email = 'admin@utu.edu.uy'
-    clave = 'admin123'
-} | ConvertTo-Json
-
-Invoke-RestMethod `
-    -Uri 'http://localhost:8002/login' `
-    -Method Post `
-    -ContentType 'application/json' `
-    -Body $body `
-    -SessionVariable apiSession
-
-Invoke-RestMethod `
-    -Uri 'http://localhost:8002/perfil' `
-    -WebSession $apiSession
-```
-
-`-SessionVariable` guarda la cookie recibida y `-WebSession` la vuelve a enviar.
-
-## Probar nivel 1: Bearer token
-
-Nivel 1 devuelve el JWT en el JSON del login. Este ejemplo lo guarda en una
-variable y después lo manda mediante `Authorization`:
-
-```powershell
-$body = @{
-    email = 'admin@utu.edu.uy'
-    clave = 'admin123'
-} | ConvertTo-Json
-
-$login = Invoke-RestMethod `
-    -Uri 'http://localhost:8001/login' `
-    -Method Post `
-    -ContentType 'application/json' `
-    -Body $body
-
-$headers = @{
-    Authorization = "Bearer $($login.datos.token)"
-}
-
-Invoke-RestMethod `
-    -Uri 'http://localhost:8001/perfil' `
-    -Headers $headers
-```
-
-La última respuesta debe contener los datos de `admin@utu.edu.uy`.
-
-## Detener o reiniciar el entorno
-
-Para detener y eliminar los containers y la red:
-
-```powershell
-docker compose down
-```
-
-Los datos quedan guardados en un volumen. Para borrar también la base y hacer
-que `database.sql` vuelva a ejecutarse desde cero:
-
-```powershell
-docker compose down -v
-```
-
-`down -v` elimina los datos de MySQL del entorno Docker y no se puede deshacer.
-
-Si algo falla, mirá los logs:
+Ver logs:
 
 ```powershell
 docker compose logs -f
 ```
 
-La explicación detallada de imágenes, containers, puertos, red y volumen está
-en [docs/docker.md](docs/docker.md).
+Detener containers:
 
-> **Sobre el idioma:** el código (clases, métodos, variables, carpetas) está en
-> **inglés**, que es la convención en programación. Las explicaciones, los
-> mensajes y las direcciones de la API quedan en **español**.
+```powershell
+docker compose down
+```
 
-## Documentación general
+Borrar tambien la base de datos Docker:
 
-Temas que no cambian entre niveles, compartidos en [docs/](docs):
+```powershell
+docker compose down -v
+```
 
-| Doc | De qué habla |
+`down -v` borra el volumen de MySQL. Usarlo solo cuando se quiera empezar desde cero.
+
+## Documentacion
+
+En `docs/` hay material de apoyo:
+
+| Archivo | Tema |
 |---|---|
-| [docs/http-y-rest.md](docs/http-y-rest.md) | métodos HTTP, códigos de estado, qué es REST |
-| [docs/variables-de-entorno.md](docs/variables-de-entorno.md) | qué es un `.env`, cómo se lee, por qué no se sube a git |
-| [docs/git-y-gitignore.md](docs/git-y-gitignore.md) | qué archivos van a git y cuáles no, y por qué |
-| [docs/seguridad-sqli-xss.md](docs/seguridad-sqli-xss.md) | inyección SQL y XSS: qué son, cómo se evitan |
-| [docs/uso-de-ia.md](docs/uso-de-ia.md) | cómo usar la IA para aprender (y no para copiar sin entender) |
-| [docs/docker.md](docs/docker.md) | imágenes, containers, Compose, red, volumen y comandos |
+| `docs/http-y-rest.md` | metodos HTTP, codigos de estado y REST |
+| `docs/variables-de-entorno.md` | uso de `.env` y secretos |
+| `docs/git-y-gitignore.md` | que subir y que no subir a Git |
+| `docs/seguridad-sqli-xss.md` | SQL injection y XSS |
+| `docs/docker.md` | Docker, Compose, puertos y volumenes |
+| `docs/uso-de-ia.md` | como usar IA para aprender |
+
+## Nota sobre nombres
+
+El codigo usa nombres en ingles porque es una convencion comun en programacion: `Controller`, `Service`, `Repository`, `Router`, `Request`, `Response`.
+
+
+
+
+
+

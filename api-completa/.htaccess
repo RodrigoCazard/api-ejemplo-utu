@@ -1,0 +1,40 @@
+﻿# ==================================================================
+# CONFIGURACIÃ“N DE APACHE (XAMPP / WAMP)
+# ==================================================================
+# Hace que todas las direcciones vayan a index.php.
+#
+# Sin esto, al pedir /productos Apache buscarÃ­a una CARPETA llamada
+# "productos", no la encontrarÃ­a y darÃ­a error 404. Nosotros queremos
+# que index.php reciba esa direcciÃ³n y decida quÃ© hacer.
+#
+# Si usan el servidor de PHP con index.php como router, esto no hace falta.
+# ==================================================================
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Nadie tiene que poder pedir por el navegador los archivos internos
+    # (los datos y el cÃ³digo de la librerÃ­a).
+    RewriteRule ^(vendor|data|storage)/ - [F,L]
+
+    # Si piden un archivo o una carpeta que existe de verdad, se sirve tal cual.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Todo lo demÃ¡s va a index.php
+    RewriteRule ^ index.php [QSA,L]
+
+    # Apache a veces se come la cabecera Authorization y entonces el
+    # token nunca llega a PHP (todo darÃ­a 401). Esto la conserva.
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+</IfModule>
+
+# Que nadie pueda ver por el navegador archivos internos o de configuraciÃ³n.
+<FilesMatch "\.(env|json|lock|sql|md|http)$">
+    Require all denied
+</FilesMatch>
+
+# Que no se vea el listado de archivos al entrar a una carpeta.
+Options -Indexes
+

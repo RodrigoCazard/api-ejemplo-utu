@@ -18,7 +18,7 @@ COPY docker/php-apache/app.conf /etc/apache2/conf-available/app.conf
 
 RUN a2enconf app
 
-# El mismo Dockerfile sirve para los dos niveles. Compose decide qué
+# El mismo Dockerfile sirve para las dos aplicaciones. Compose decide qué
 # carpeta copiar mediante APP_DIR durante la construcción de cada imagen.
 ARG APP_DIR
 COPY ${APP_DIR}/ /var/www/html/
