@@ -1,8 +1,7 @@
 -- ======================================================================
 -- database.sql
 -- ======================================================================
--- Crea la base y las dos tablas que usa esta API, con los mismos datos
--- de prueba que antes vivían en mocks/*.json.
+-- Crea la base y las dos tablas que usa esta API.
 --
 -- Cómo importarlo:
 --
