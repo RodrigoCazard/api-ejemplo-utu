@@ -46,7 +46,7 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/vendor/autoload.php';
 
-// Core: PERO SIN Router.php, porque aca no lo usamos.
+// Core: Codigo que se usa en diferentes parte de la aplicacion.
 require_once __DIR__ . '/core/Database.php';
 require_once __DIR__ . '/core/Response.php';
 require_once __DIR__ . '/core/Token.php';
@@ -74,7 +74,7 @@ require_once __DIR__ . '/controllers/ProductController.php';
 // ------------------------------------------------------------------
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, PATCH, DELETE, OPTIONS');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
@@ -153,33 +153,33 @@ try {
         // ---- Productos ---------------------------------------------
         case $method === 'GET' && $count === 1 && $parts[0] === 'productos':
             // GET /productos
-            (new ProductController())->index();
+            (new ProductController())->listProducts();
             break;
 
         case $method === 'GET' && $count === 2 && $parts[0] === 'productos':
             // GET /productos/3  ->  $parts[1] es el id ('3')
-            (new ProductController())->show($parts[1]);
+            (new ProductController())->getProduct($parts[1]);
             break;
 
         case $method === 'POST' && $count === 1 && $parts[0] === 'productos':
             // POST /productos
-            (new ProductController())->store();
+            (new ProductController())->createProduct();
             break;
 
-        case $method === 'PUT' && $count === 2 && $parts[0] === 'productos':
-            // PUT /productos/3
-            (new ProductController())->update($parts[1]);
+        case $method === 'PATCH' && $count === 2 && $parts[0] === 'productos':
+            // PATCH /productos/3
+            (new ProductController())->updateProduct($parts[1]);
             break;
 
         case $method === 'DELETE' && $count === 2 && $parts[0] === 'productos':
             // DELETE /productos/3
-            (new ProductController())->destroy($parts[1]);
+            (new ProductController())->deleteProduct($parts[1]);
             break;
 
         // Una accion que no es CRUD: vender descuenta stock.
         case $method === 'POST' && $count === 3 && $parts[0] === 'productos' && $parts[2] === 'vender':
             // POST /productos/3/vender  ->  $parts[1] es el id ('3')
-            (new ProductController())->sell($parts[1]);
+            (new ProductController())->sellProduct($parts[1]);
             break;
 
         // ---- Nada coincidio ---------------------------------------

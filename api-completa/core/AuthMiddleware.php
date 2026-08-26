@@ -12,7 +12,7 @@
  *
  * En api-simple (que no tiene Router ni middleware) cada controller pide
  * el login por su cuenta, adentro del metodo (`requireLogin()` al
- * principio de store(), de destroy(), etc. - mira
+ * principio de createProduct(), de deleteProduct(), etc. - mira
  * controllers/ProductController.php de api-simple). Eso funciona, pero
  * mezcla dos preguntas distintas: "?quien puede entrar a esta ruta?"
  * (autenticacion) y "?que hace esta ruta?" (el trabajo del
@@ -21,9 +21,9 @@
  * Aca esa primera pregunta se contesta en UN solo lugar (este
  * archivo) y se declara al lado de cada ruta, en routes.php:
  *
- *     $router->add('DELETE', '/productos/{id}', 'ProductController', 'destroy', 'admin');
- *                                                                                  ^^^^^^^
- *                                                                    con que middleware corre
+ *     $router->add('DELETE', '/productos/{id}', 'ProductController', 'deleteProduct', 'admin');
+ *                                                                                       ^^^^^^^
+ *                                                                                       con que middleware corre
  *
  * Asi, con solo mirar routes.php, sabes que rutas piden login y
  * cuales no, sin tener que abrir cada controller.

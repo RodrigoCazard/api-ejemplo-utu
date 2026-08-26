@@ -23,13 +23,16 @@
  * ------------------------------------------------------------------
  * LOS NOMBRES DE LOS MÉTODOS
  *
- * Son los que usa Laravel para un CRUD, así que conviene acostumbrarse:
+ * En vez de los nombres genéricos que usa Laravel para un CRUD
+ * (index, show, store, update, destroy), cada método se llama según
+ * lo que hace:
  *
- *   index()   -> listar todos      GET    /productos
- *   show()    -> ver uno           GET    /productos/3
- *   store()   -> crear             POST   /productos
- *   update()  -> modificar         PUT    /productos/3
- *   destroy() -> borrar            DELETE /productos/3
+ *   listProducts()   -> listar todos      GET    /productos
+ *   getProduct()     -> ver uno           GET    /productos/3
+ *   createProduct()  -> crear             POST   /productos
+ *   updateProduct()  -> modificar         PATCH  /productos/3
+ *   deleteProduct()  -> borrar            DELETE /productos/3
+ *   sellProduct()    -> vender            POST   /productos/3/vender
  *
  * ------------------------------------------------------------------
  * ¿DÓNDE VALIDO CADA COSA? (la pregunta que siempre aparece)
@@ -67,7 +70,7 @@ class ProductController extends Controller
      * Todos los métodos reciben $id porque el router siempre se lo
      * manda (vale null cuando la dirección no tiene un {id}).
      */
-    public function index($id = null)
+    public function listProducts($id = null)
     {
         // Lo que viene después del "?" está en $_GET.
         // $_GET es un arreglo superglobal: PHP lo llena con el query string.
@@ -75,7 +78,7 @@ class ProductController extends Controller
         $category = $_GET['categoria'] ?? null;
 
         // Cada endpoint llama a su propio método del validator.
-        $errors = ProductValidator::validateIndex($category);
+        $errors = ProductValidator::validateListProducts($category);
 
         if (count($errors) > 0) {
             Response::error('Revisá los datos.', 400, $errors);
@@ -87,9 +90,9 @@ class ProductController extends Controller
     }
 
     /** GET /productos/3 */
-    public function show($id = null)
+    public function getProduct($id = null)
     {
-        $errors = ProductValidator::validateShow($id);
+        $errors = ProductValidator::validateGetProduct($id);
 
         if (count($errors) > 0) {
             Response::error('Revisá los datos.', 400, $errors);
@@ -103,12 +106,12 @@ class ProductController extends Controller
     /**
      * POST /productos   (hay que estar logueado)
      */
-    public function store($id = null)
+    public function createProduct($id = null)
     {
-        $data = $this->requestData();
+        $data = $this->getJsonBody();
 
         // El validator trabaja con la entrada cruda y devuelve errores básicos.
-        $errors = ProductValidator::validateStore($data);
+        $errors = ProductValidator::validateCreateProduct($data);
 
         if (count($errors) > 0) {
             Response::error('Revisá los datos.', 400, $errors);
@@ -124,15 +127,15 @@ class ProductController extends Controller
     }
 
     /**
-     * PUT /productos/3   (hay que estar logueado)
+     * PATCH /productos/3   (hay que estar logueado)
      * Se mandan solo los campos que se quieren cambiar.
      */
-    public function update($id = null)
+    public function updateProduct($id = null)
     {
-        $data = $this->requestData();
+        $data = $this->getJsonBody();
 
-        // validateUpdate también valida el ID incluido en la dirección.
-        $errors = ProductValidator::validateUpdate($id, $data);
+        // validateUpdateProduct también valida el ID incluido en la dirección.
+        $errors = ProductValidator::validateUpdateProduct($id, $data);
 
         if (count($errors) > 0) {
             Response::error('Revisá los datos.', 400, $errors);
@@ -149,9 +152,9 @@ class ProductController extends Controller
     /**
      * DELETE /productos/3   (solo administradores)
      */
-    public function destroy($id = null)
+    public function deleteProduct($id = null)
     {
-        $errors = ProductValidator::validateDestroy($id);
+        $errors = ProductValidator::validateDeleteProduct($id);
 
         if (count($errors) > 0) {
             Response::error('Revisá los datos.', 400, $errors);
@@ -169,12 +172,12 @@ class ProductController extends Controller
      * Fijate que el controller no sabe NADA de cómo se vende:
      * no descuenta stock ni controla nada. Solo pasa el pedido.
      */
-    public function sell($id = null)
+    public function sellProduct($id = null)
     {
-        $data = $this->requestData();
+        $data = $this->getJsonBody();
 
         // La venta tiene su propio validator porque recibe ID y cantidad.
-        $errors = ProductValidator::validateSell($id, $data);
+        $errors = ProductValidator::validateSellProduct($id, $data);
 
         if (count($errors) > 0) {
             Response::error('Revisá los datos.', 400, $errors);

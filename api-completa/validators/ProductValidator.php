@@ -4,7 +4,7 @@
  * VALIDADOR DE PRODUCTOS
  * ==================================================================
  * Cada endpoint tiene su propio método público. Eso permite leer en el
- * controller ProductValidator::validateStore() y saber inmediatamente
+ * controller ProductValidator::validateCreateProduct() y saber inmediatamente
  * qué petición se está validando.
  *
  * Este archivo controla FORMATO: campos, texto, números e IDs.
@@ -17,7 +17,7 @@
 class ProductValidator
 {
     /** Valida GET /productos y su filtro opcional ?categoria=. */
-    public static function validateIndex($category): array
+    public static function validateListProducts($category): array
     {
         // El operador !== significa "distinto en valor o tipo"; && significa "Y".
         // Si no mandaron categoría vale null y no hay nada que validar.
@@ -30,14 +30,14 @@ class ProductValidator
     }
 
     /** Valida el {id} recibido en GET /productos/{id}. */
-    public static function validateShow($id): array
+    public static function validateGetProduct($id): array
     {
         // self:: llama a otro método de esta misma clase.
         return self::validateId($id);
     }
 
     /** Valida todos los campos necesarios para POST /productos. */
-    public static function validateStore(array $data): array
+    public static function validateCreateProduct(array $data): array
     {
         $errors = [];
 
@@ -75,10 +75,10 @@ class ProductValidator
     }
 
     /**
-     * Valida PUT /productos/{id}.
+     * Valida PATCH /productos/{id}.
      * En un update los campos son opcionales, pero al menos uno debe venir.
      */
-    public static function validateUpdate($id, array $data): array
+    public static function validateUpdateProduct($id, array $data): array
     {
         // Empezamos con los posibles errores del ID y luego agregamos otros.
         $errors = self::validateId($id);
@@ -125,13 +125,13 @@ class ProductValidator
     }
 
     /** Valida el {id} recibido en DELETE /productos/{id}. */
-    public static function validateDestroy($id): array
+    public static function validateDeleteProduct($id): array
     {
         return self::validateId($id);
     }
 
     /** Valida el ID y la cantidad de POST /productos/{id}/vender. */
-    public static function validateSell($id, array $data): array
+    public static function validateSellProduct($id, array $data): array
     {
         $errors = self::validateId($id);
 

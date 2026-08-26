@@ -18,13 +18,16 @@
  * ------------------------------------------------------------------
  * LOS NOMBRES DE LOS METODOS
  *
- * Son los que usa Laravel para un CRUD, asi que conviene acostumbrarse:
+ * En vez de los nombres genericos que usa Laravel para un CRUD
+ * (index, show, store, update, destroy), cada metodo se llama segun
+ * lo que hace:
  *
- *   index()   -> listar todos      GET    /productos
- *   show()    -> ver uno           GET    /productos/3
- *   store()   -> crear             POST   /productos
- *   update()  -> modificar         PUT    /productos/3
- *   destroy() -> borrar            DELETE /productos/3
+ *   listProducts()   -> listar todos      GET    /productos
+ *   getProduct()     -> ver uno           GET    /productos/3
+ *   createProduct()  -> crear             POST   /productos
+ *   updateProduct()  -> modificar         PATCH  /productos/3
+ *   deleteProduct()  -> borrar            DELETE /productos/3
+ *   sellProduct()    -> vender            POST   /productos/3/vender
  *
  * ------------------------------------------------------------------
  * ?DONDE VALIDO CADA COSA? (la pregunta que siempre aparece)
@@ -39,7 +42,7 @@
  * Regla practica: si para responder hay que ir a buscar datos,
  * es del service.
  *
- * requireLogin(), requireAdmin() y requestData() estan en
+ * requireLogin(), requireAdmin() y getJsonBody() estan en
  * core/helpers.php.
  * ==================================================================
  */
@@ -62,7 +65,7 @@ class ProductController
      *
      * Esta ruta no recibe un ID porque pide la coleccion completa.
      */
-    public function index()
+    public function listProducts()
     {
         // Lo que viene despues del "?" esta en $_GET.
         $category = $_GET['categoria'] ?? null;
@@ -73,7 +76,7 @@ class ProductController
     }
 
     /** GET /productos/3 */
-    public function show($id)
+    public function getProduct($id)
     {
         $id = $this->validateId($id);
 
@@ -85,12 +88,13 @@ class ProductController
     /**
      * POST /productos   (hay que estar logueado)
      */
-    public function store()
+    public function createProduct()
     {
         requireLogin();
 
-        $data = requestData();
+        $data = getJsonBody();
 
+        //Aca se puede ver la estructura de los datos que manda el cliente, y se pueden validar. Si algo no esta bien, respondemos con error 400 y un mensaje.
         $name        = $data['nombre'] ?? null;
         $description = $data['descripcion'] ?? '';
         $price       = $data['precio'] ?? null;
@@ -138,15 +142,15 @@ class ProductController
     }
 
     /**
-     * PUT /productos/3   (hay que estar logueado)
+     * PATCH /productos/3   (hay que estar logueado)
      * Se mandan solo los campos que se quieren cambiar.
      */
-    public function update($id)
+    public function updateProduct($id)
     {
         requireLogin();
 
         $id = $this->validateId($id);
-        $data = requestData();
+        $data = getJsonBody();
 
         $errors = [];
         $allowedFields = ['nombre', 'descripcion', 'precio', 'stock', 'categoria'];
@@ -213,7 +217,7 @@ class ProductController
     /**
      * DELETE /productos/3   (solo administradores)
      */
-    public function destroy($id)
+    public function deleteProduct($id)
     {
         // Aca pedimos ADMIN: no alcanza con estar logueado.
         requireAdmin();
@@ -232,12 +236,12 @@ class ProductController
      * Fijate que el controller no sabe NADA de como se vende:
      * no descuenta stock ni controla nada. Solo pasa el pedido.
      */
-    public function sell($id)
+    public function sellProduct($id)
     {
         requireLogin();
 
         $id = $this->validateId($id);
-        $data = requestData();
+        $data = getJsonBody();
 
         $quantity = $data['cantidad'] ?? 1;
 

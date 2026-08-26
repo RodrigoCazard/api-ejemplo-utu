@@ -13,7 +13,7 @@
  *   4. El cliente guarda ese token
  *   5. En cada pedido lo manda: Authorization: Bearer <token>
  *
- * requestData() y requireLogin() estan en core/helpers.php.
+ * getJsonBody() y requireLogin() estan en core/helpers.php.
  * ==================================================================
  */
 class AuthController
@@ -31,7 +31,7 @@ class AuthController
      */
     public function register()
     {
-        $data = requestData();
+        $data = getJsonBody();
 
         // Primero conservamos los valores tal como llegaron. Asi podemos
         // comprobar su tipo antes de usar funciones como trim() o strlen().
@@ -73,7 +73,7 @@ class AuthController
      */
     public function login()
     {
-        $data = requestData();
+        $data = getJsonBody();
 
         $email    = $data['email'] ?? null;
         $password = $data['clave'] ?? null;

@@ -11,7 +11,7 @@
  *
  * Cada metodo de cada controller decide por su cuenta si necesita
  * requireLogin() o requireAdmin(), llamandola al principio (mira
- * ProductController::store(), por ejemplo). En api-completa esa decision
+ * ProductController::createProduct(), por ejemplo). En api-completa esa decision
  * no esta en el controller: se declara en routes.php y la aplica un
  * middleware ANTES de que el controller se entere del pedido - mira
  * core/AuthMiddleware.php de api-completa para comparar los dos enfoques.
@@ -19,12 +19,14 @@
  */
 
 /**
- * Lee el JSON que mando el cliente y lo convierte en arreglo.
+ * Lee el JSON que mando el cliente en el CUERPO del pedido y lo
+ * convierte en arreglo. (El query string, en cambio, se lee aparte
+ * con $_GET: no es trabajo de esta funcion.)
  *
- * Los datos de un POST o un PUT en formato JSON no llegan en $_POST:
+ * Los datos de un POST o un PATCH en formato JSON no llegan en $_POST:
  * hay que leerlos del "cuerpo" del pedido con php://input.
  */
-function requestData(): array
+function getJsonBody(): array
 {
     $json = file_get_contents('php://input');
 
@@ -35,8 +37,7 @@ function requestData(): array
 
     $data = json_decode($json, true);
 
-    // Un JSON mal escrito es distinto de no mandar datos. Lo avisamos con
-    // un error 400 para que el cliente pueda corregir su peticion.
+    // Verificamos que el body contenga un JSON válido.
     if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
         Response::error('El cuerpo tiene que ser un objeto JSON valido.', 400);
     }

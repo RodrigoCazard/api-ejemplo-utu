@@ -21,7 +21,7 @@ Cada metodo comunica una *intencion* distinta sobre el mismo recurso:
 |---|---|---|
 | `GET` | leer, sin cambiar nada | `GET /productos` |
 | `POST` | crear algo nuevo | `POST /productos` |
-| `PUT` | reemplazar/modificar algo que ya existe | `PUT /productos/3` |
+| `PATCH` | modificar parcialmente algo que ya existe | `PATCH /productos/3` |
 | `DELETE` | borrar | `DELETE /productos/3` |
 
 Un detalle que suele confundir al principio: **la direccion puede ser
@@ -39,10 +39,13 @@ los metodos dicen **que hacer** con ellos (verbos).
 ### Idempotencia (una palabra que vale la pena conocer)
 
 Un metodo es *idempotente* si pedirlo una vez o pedirlo diez veces seguidas
-da el mismo resultado final. `GET`, `PUT` y `DELETE` son idempotentes: pedir
+da el mismo resultado final. `GET` y `DELETE` son idempotentes: pedir
 `DELETE /productos/3` diez veces termina igual que pedirlo una sola vez (la
 primera lo borra, las siguientes ya no tienen nada para borrar). `POST` **no**
-es idempotente: mandarlo diez veces crea diez productos.
+es idempotente: mandarlo diez veces crea diez productos. `PATCH` no tiene esa
+garantia por definicion (depende de que mande cada pedido), aunque en esta
+API en particular sí es idempotente: mandar el mismo cambio dos veces deja el
+producto en el mismo estado final.
 
 ## Los codigos de estado
 
@@ -83,22 +86,24 @@ que ya existen, en vez de inventar una direccion distinta por cada accion.
 GET    /productos       listar
 GET    /productos/3     ver uno
 POST   /productos       crear
-PUT    /productos/3     modificar
+PATCH  /productos/3     modificar
 DELETE /productos/3     borrar
 ```
 
 Esas cinco operaciones sobre un mismo recurso se llaman **CRUD**
-(Create, Read, Update, Delete), y son tan comunes que Laravel les da nombres
-estandar a los metodos del controlador - los mismos que usa este proyecto a
-proposito:
+(Create, Read, Update, Delete). Laravel les da nombres estandar a los
+metodos del controlador (`index`, `show`, `store`, `update`, `destroy`);
+vale la pena conocerlos porque los vas a ver en cualquier proyecto Laravel.
+Este proyecto, en cambio, usa nombres que dicen que hacen sin tener que
+mirar la ruta:
 
-| Metodo del controller | Corresponde a |
-|---|---|
-| `index()` | listar (`GET /productos`) |
-| `show()` | ver uno (`GET /productos/3`) |
-| `store()` | crear (`POST /productos`) |
-| `update()` | modificar (`PUT /productos/3`) |
-| `destroy()` | borrar (`DELETE /productos/3`) |
+| Metodo del controller | Corresponde a | Nombre equivalente en Laravel |
+|---|---|---|
+| `listProducts()` | listar (`GET /productos`) | `index()` |
+| `getProduct()` | ver uno (`GET /productos/3`) | `show()` |
+| `createProduct()` | crear (`POST /productos`) | `store()` |
+| `updateProduct()` | modificar (`PATCH /productos/3`) | `update()` |
+| `deleteProduct()` | borrar (`DELETE /productos/3`) | `destroy()` |
 
 ### ?Y las acciones que no son CRUD?
 

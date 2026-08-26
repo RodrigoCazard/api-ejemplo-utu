@@ -12,7 +12,7 @@
  * tiene una única propiedad. Mantenerlo separado deja explícito qué dato
  * necesita la operación de venta y garantiza que llegue como int.
  *
- * Primero ProductValidator::validateSell() valida y después el controller
+ * Primero ProductValidator::validateSellProduct() valida y después el controller
  * crea este DTO. El DTO NO valida el stock disponible, no consulta la base,
  * no realiza la venta y no responde HTTP.
  * ==================================================================

@@ -8,13 +8,13 @@
  * Así ProductService no necesita trabajar con el arreglo crudo que llegó
  * desde HTTP.
  *
- * En PUT /productos/{id} el cliente manda solamente lo que quiere
+ * En PATCH /productos/{id} el cliente manda solamente lo que quiere
  * cambiar. Por eso este DTO no tiene cinco propiedades obligatorias:
  * selecciona y guarda en $fields únicamente los campos permitidos que
  * llegaron. Los textos se normalizan, el precio se convierte a float y
  * el stock a int.
  *
- * Primero ProductValidator::validateUpdate() valida y después el
+ * Primero ProductValidator::validateUpdateProduct() valida y después el
  * controller crea este DTO. El DTO NO valida, no busca el producto, no
  * decide si se puede modificar y no responde HTTP.
  * ==================================================================

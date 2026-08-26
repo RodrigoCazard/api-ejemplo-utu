@@ -76,7 +76,7 @@ La carpeta `storage/` la usa Symfony Cache para guardar el estado del limite. No
 | `GET` | `/productos` | Listar productos | Publico |
 | `GET` | `/productos/{id}` | Ver un producto | Publico |
 | `POST` | `/productos` | Crear producto | Login requerido |
-| `PUT` | `/productos/{id}` | Modificar producto | Login requerido |
+| `PATCH` | `/productos/{id}` | Modificar producto | Login requerido |
 | `DELETE` | `/productos/{id}` | Borrar producto | Solo admin |
 | `POST` | `/productos/{id}/vender` | Vender y descontar stock | Login requerido |
 
@@ -139,7 +139,7 @@ Para empezar, abri en el navegador:
 http://localhost:8000/productos
 ```
 
-Para `POST`, `PUT` y `DELETE`, usa Postman, Insomnia o el frontend que conectes a esta API.
+Para `POST`, `PATCH` y `DELETE`, usa Postman, Insomnia o el frontend que conectes a esta API.
 
 Usuarios de prueba:
 
@@ -260,7 +260,7 @@ Lo que faltaria para una API real: HTTPS obligatorio, proteccion CSRF completa, 
 ## Orden recomendado para estudiar
 
 1. Mirar `routes.php`.
-2. Seguir `GET /productos` hasta `ProductController::index()`.
+2. Seguir `GET /productos` hasta `ProductController::listProducts()`.
 3. Ver como el controller llama al service.
 4. Ver como el service llama al repository.
 5. Mirar una ruta protegida, por ejemplo `POST /productos`.

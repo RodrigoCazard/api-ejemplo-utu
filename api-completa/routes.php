@@ -47,14 +47,14 @@ $router->add('POST', '/logout',   'AuthController', 'logout');
 $router->add('GET',  '/perfil',   'AuthController', 'profile', 'auth');
 
 // ---- Productos ---------------------------------------------------
-$router->add('GET',    '/productos',      'ProductController', 'index');
-$router->add('GET',    '/productos/{id}', 'ProductController', 'show');
-$router->add('POST',   '/productos',      'ProductController', 'store',   'auth');
-$router->add('PUT',    '/productos/{id}', 'ProductController', 'update',  'auth');
-$router->add('DELETE', '/productos/{id}', 'ProductController', 'destroy', 'admin');
+$router->add('GET',    '/productos',      'ProductController', 'listProducts');
+$router->add('GET',    '/productos/{id}', 'ProductController', 'getProduct');
+$router->add('POST',   '/productos',      'ProductController', 'createProduct', 'auth');
+$router->add('PATCH',  '/productos/{id}', 'ProductController', 'updateProduct', 'auth');
+$router->add('DELETE', '/productos/{id}', 'ProductController', 'deleteProduct', 'admin');
 
 // Una accion que no es un CRUD: vender descuenta stock.
-$router->add('POST', '/productos/{id}/vender', 'ProductController', 'sell', 'auth');
+$router->add('POST', '/productos/{id}/vender', 'ProductController', 'sellProduct', 'auth');
 
 return $router;
 

@@ -12,7 +12,7 @@ produccion sin convertirlo de golpe en un sistema demasiado complejo.
 ## Prioridad 1: interpretar correctamente la entrada HTTP
 
 Actualmente, si el cuerpo esta vacio o contiene un JSON mal escrito,
-`Controller::requestData()` devuelve `[]` en los dos casos. Seria mejor poder
+`Controller::getJsonBody()` devuelve `[]` en los dos casos. Seria mejor poder
 distinguirlos.
 
 Una version mas estricta deberia:
@@ -35,8 +35,8 @@ La cookie del JWT tiene `HttpOnly` y `SameSite=Lax`, lo cual es una buena base.
 Sin embargo, una cookie se envia automaticamente en los pedidos y por eso los
 endpoints que modifican datos tambien necesitan proteccion contra CSRF.
 
-Una mejora educativa posible es crear un `CsrfMiddleware` para `POST`, `PUT`,
-`PATCH` y `DELETE`. Este middleware podria:
+Una mejora educativa posible es crear un `CsrfMiddleware` para `POST`, `PATCH`
+y `DELETE`. Este middleware podria:
 
 1. Verificar que la cabecera `Origin` coincida con `FRONTEND_ORIGIN`.
 2. Exigir un token CSRF en una cabecera como `X-CSRF-Token`.
@@ -173,20 +173,6 @@ Los numeros `float` pueden tener pequenas diferencias de precision. Para
 precios se pueden guardar centesimos como enteros o trabajar con strings
 decimales. La base ya utiliza `DECIMAL(10, 2)`, pero el DTO actualmente lo
 convierte a `float`.
-
-### Diferenciar `PUT` y `PATCH`
-
-`PUT` normalmente representa el reemplazo completo de un recurso. Si el
-cliente manda solamente los campos que desea cambiar, la operacion se parece
-mas a `PATCH`.
-
-Se puede elegir una de estas opciones:
-
-- Mantener `PUT` y exigir todos los campos.
-- Cambiar el update parcial a `PATCH`.
-
-Referencias: [RFC 9110: PUT](https://www.rfc-editor.org/rfc/rfc9110.html#name-put)
-y [RFC 5789: PATCH](https://www.rfc-editor.org/rfc/rfc5789.html).
 
 ### Usar codigos HTTP mas precisos
 

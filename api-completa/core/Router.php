@@ -13,15 +13,15 @@
  *
  * Se usa así:
  *
- *     $router->add('GET', '/productos/{id}', 'ProductController', 'show');
+ *     $router->add('GET', '/productos/{id}', 'ProductController', 'getProduct');
  *
  * Que se lee: "si piden GET /productos/5, creá un ProductController
- * y llamá a su método show(5)".
+ * y llamá a su método getProduct(5)".
  *
  * Hay un quinto parámetro opcional para el middleware (ver más abajo
  * y AuthMiddleware.php):
  *
- *     $router->add('DELETE', '/productos/{id}', 'ProductController', 'destroy', 'admin');
+ *     $router->add('DELETE', '/productos/{id}', 'ProductController', 'deleteProduct', 'admin');
  * ==================================================================
  */
 class Router
@@ -112,8 +112,8 @@ class Router
                  *     $class = 'ProductController';
                  *     $object = new $class();      // new ProductController()
                  *
-                 *     $action = 'show';
-                 *     $object->$action(5);         // $object->show(5)
+                 *     $action = 'getProduct';
+                 *     $object->$action(5);         // $object->getProduct(5)
                  *
                  * Gracias a esto el router funciona con CUALQUIER
                  * controller, sin tener que conocerlos de antemano.

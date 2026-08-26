@@ -19,7 +19,7 @@
  * Lo que hace, en orden:
  *
  *   1. Carga los archivos de cada capa
- *   2. Mira QUE METODO usaron (GET, POST, PUT, DELETE)
+ *   2. Mira QUE METODO usaron (GET, POST, PATCH, DELETE)
  *   3. Mira QUE DIRECCION pidieron (/productos/3)
  *   4. Se lo entrega al router, que sabe quien lo atiende
  *
@@ -143,7 +143,7 @@ if ($origin === FRONTEND_ORIGIN) {
 
 // Cabeceras y metodos que el frontend tiene permitido utilizar.
 header('Access-Control-Allow-Headers: Content-Type');
-header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, PATCH, DELETE, OPTIONS');
 
 // Antes de un POST o un DELETE, el navegador manda un pedido OPTIONS
 // preguntando "?me dejas?". Le contestamos que si y listo.
@@ -166,7 +166,7 @@ RateLimiter::check(60, 60);
 // 4) ?QUE METODO Y QUE DIRECCION PIDIERON?
 // ------------------------------------------------------------------
 
-// GET, POST, PUT o DELETE
+// GET, POST, PATCH o DELETE
 $method = $_SERVER['REQUEST_METHOD'];
 
 // La direccion, sin lo que viene despues del "?"

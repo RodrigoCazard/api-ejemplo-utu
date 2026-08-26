@@ -40,7 +40,7 @@ pedido HTTP
 |---|---|
 | Entrada unica de la API | `index.php` |
 | Rutas sin Router | `switch (true)` en `index.php` |
-| JSON de entrada | `requestData()` en `core/helpers.php` |
+| JSON de entrada | `getJsonBody()` en `core/helpers.php` |
 | Respuestas JSON | `core/Response.php` |
 | Login manual | `requireLogin()` en `core/helpers.php` |
 | Roles | `requireAdmin()` en `core/helpers.php` |
@@ -214,7 +214,7 @@ api-completa sirve para ver como se ordena cuando el proyecto crece.
 | `GET` | `/productos` | Listar productos | Publico |
 | `GET` | `/productos/{id}` | Ver un producto | Publico |
 | `POST` | `/productos` | Crear producto | Bearer token |
-| `PUT` | `/productos/{id}` | Modificar producto | Bearer token |
+| `PATCH` | `/productos/{id}` | Modificar producto | Bearer token |
 | `DELETE` | `/productos/{id}` | Borrar producto | Solo admin |
 | `POST` | `/productos/{id}/vender` | Vender y descontar stock | Bearer token |
 
@@ -295,7 +295,7 @@ Para empezar, abri en el navegador:
 http://localhost:8000/productos
 ```
 
-Para `POST`, `PUT` y `DELETE`, usa Postman, Insomnia o el frontend que conectes a esta API.
+Para `POST`, `PATCH` y `DELETE`, usa Postman, Insomnia o el frontend que conectes a esta API.
 
 Usuarios de prueba:
 
@@ -308,7 +308,7 @@ Usuarios de prueba:
 
 1. Abrir `index.php`.
 2. Buscar `GET /productos` en el switch.
-3. Entrar a `ProductController::index()`.
+3. Entrar a `ProductController::listProducts()`.
 4. Ver como llama al service.
 5. Ver como el service llama al repository.
 6. Mostrar la consulta preparada en PDO.

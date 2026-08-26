@@ -12,7 +12,7 @@
  * producto. Normaliza los textos con trim(), convierte el precio a float
  * y el stock a int, y los guarda en propiedades con tipos definidos.
  *
- * Primero ProductValidator::validateStore() valida y después el
+ * Primero ProductValidator::validateCreateProduct() valida y después el
  * controller crea este DTO. El DTO NO valida, no busca productos en la
  * base, no aplica reglas del negocio y no responde HTTP.
  * ==================================================================

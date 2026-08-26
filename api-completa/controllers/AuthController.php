@@ -32,8 +32,8 @@ class AuthController extends Controller
      */
     public function register($id = null)
     {
-        // requestData() convierte el JSON recibido en un arreglo PHP.
-        $data = $this->requestData();
+        // getJsonBody() convierte el JSON recibido en un arreglo PHP.
+        $data = $this->getJsonBody();
 
         // :: llama al método static sin crear un objeto AuthValidator.
         $errors = AuthValidator::validateRegister($data);
@@ -58,7 +58,7 @@ class AuthController extends Controller
      */
     public function login($id = null)
     {
-        $data = $this->requestData();
+        $data = $this->getJsonBody();
 
         // Este método valida específicamente los datos de POST /login.
         $errors = AuthValidator::validateLogin($data);

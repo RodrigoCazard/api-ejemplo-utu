@@ -28,12 +28,14 @@
 abstract class Controller
 {
     /**
-     * Lee el JSON que mando el cliente y lo convierte en arreglo.
+     * Lee el JSON que mando el cliente en el CUERPO del pedido y lo
+     * convierte en arreglo. (El query string, en cambio, se lee aparte
+     * con $_GET: no es trabajo de este metodo.)
      *
-     * Los datos de un POST o un PUT en formato JSON no llegan en
+     * Los datos de un POST o un PATCH en formato JSON no llegan en
      * $_POST: hay que leerlos del "cuerpo" del pedido con php://input.
      */
-    protected function requestData()
+    protected function getJsonBody()
     {
         $json = file_get_contents('php://input');
 
