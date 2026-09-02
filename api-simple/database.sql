@@ -1,7 +1,8 @@
 -- ======================================================================
 -- database.sql
 -- ======================================================================
--- Crea la base y las dos tablas que usa esta API
+-- Crea la base, las tablas de la API (usuarios, productos) y la tabla
+-- del ejercicio grupal "ventas" (ver docs/ejercicio-nueva-entidad.md).
 --
 -- Cómo importarlo:
 --
@@ -11,6 +12,12 @@
 --
 -- Si tu base, usuario o contraseña son distintos a los de .env.example,
 -- acordate de actualizar tu .env (DB_HOST, DB_NAME, DB_USER, DB_PASSWORD).
+--
+-- Si ya habias importado una version anterior de este archivo (sin la
+-- tabla ventas), volve a importarlo desde cero para que se agregue:
+--
+--   DROP DATABASE utu_demo;    (borra la base vieja)
+--   mysql -u root -p < database.sql
 -- ======================================================================
 
 CREATE DATABASE IF NOT EXISTS utu_demo
@@ -65,3 +72,41 @@ INSERT INTO productos (nombre, descripcion, precio, stock, categoria, activo) VA
 ('Monitor 24 pulgadas',  'Monitor Full HD con HDMI.',                9800.00,  5, 'monitores',     1),
 ('Notebook 15 pulgadas', 'Notebook con 8 GB de RAM y disco SSD.',   38500.00,  0, 'computadoras',  1),
 ('Auriculares',          'Auriculares con micrófono.',               3200.00, 18, 'audio',         1);
+
+-- ======================================================================
+-- Tabla del ejercicio grupal "ventas" (ver
+-- docs/ejercicio-nueva-entidad.md). Ya esta creada a proposito: en esta
+-- etapa del curso todavia no vimos como disenar tablas, asi que la base
+-- se las damos hecha. Lo que construye la clase es el backend PHP
+-- (Model ya armado en models/Venta.php; Repository, Service y
+-- Controller con un metodo por grupo) sobre ESTA MISMA tabla.
+-- ======================================================================
+
+-- ----------------------------------------------------------------------
+-- Tabla ventas
+-- ----------------------------------------------------------------------
+CREATE TABLE ventas (
+    id               INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id       INT NOT NULL,
+    producto_id      INT NOT NULL,
+    cantidad         INT NOT NULL,
+    precio_unitario  DECIMAL(10, 2) NOT NULL,
+    total            DECIMAL(10, 2) NOT NULL,
+    estado           VARCHAR(20) NOT NULL DEFAULT 'confirmada',
+    fecha            DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_ventas_usuario
+        FOREIGN KEY (usuario_id) REFERENCES usuarios (id),
+
+    CONSTRAINT fk_ventas_producto
+        FOREIGN KEY (producto_id) REFERENCES productos (id)
+);
+
+-- 'estado' guarda 'confirmada' o 'anulada'. Una venta anulada NO se
+-- borra (se pierde el historial): queda marcada, y el stock del
+-- producto se devuelve. Ver el endpoint "anular" en la letra del
+-- ejercicio.
+INSERT INTO ventas (usuario_id, producto_id, cantidad, precio_unitario, total, estado) VALUES
+(2, 1, 1, 2450.00, 2450.00, 'confirmada'),
+(2, 2, 2,  890.00, 1780.00, 'confirmada'),
+(2, 5, 1, 3200.00, 3200.00, 'anulada');

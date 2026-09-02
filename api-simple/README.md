@@ -240,9 +240,78 @@ API simple no tiene `/logout`: cerrar sesion significa borrar el token del front
 
 ## Como levantarla localmente
 
+Hay dos formas. La recomendada es Docker: un solo comando y listo, sin
+instalar PHP, Composer ni MySQL. La otra es instalar todo a mano, util
+si no tenes Docker o si queres entender cada pieza por separado.
+
+### Opcion A (recomendada): Docker, todo automatico
+
+Necesitas [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+instalado y abierto. Nada mas.
+
+```powershell
+cd api-simple
+docker compose up --build
+```
+
+Eso es todo. No hace falta crear ningun `.env` ni generar ninguna
+clave: `compose.yaml` ya trae una `SECRET_KEY` de demo y valores por
+defecto para lo demas, y la base de datos se crea sola la primera vez
+con `database.sql`. La primera corrida descarga imagenes e instala
+Composer adentro del container, asi que tarda un poco mas; las
+siguientes son casi instantaneas.
+
+Probar:
+
+```text
+http://localhost:8001/productos
+```
+
+Comandos utiles, desde esta misma carpeta:
+
+```powershell
+docker compose ps            # ver containers
+docker compose logs -f       # ver logs
+docker compose down          # detener
+docker compose down -v       # detener y borrar tambien la base de datos
+```
+
+`down -v` borra el volumen de MySQL: usalo cuando quieras arrancar la
+base desde cero.
+
+**Si `database.sql` cambio** (por ejemplo, trajiste cambios nuevos con
+`git pull` y aparecieron tablas que todavia no tenes): Docker solo
+corre `database.sql` la PRIMERA vez que crea el volumen de MySQL: si ya
+lo habias levantado antes, un `docker compose up` de nuevo no lo vuelve
+a ejecutar. Para que los cambios entren, hay que borrar el volumen y
+recrearlo:
+
+```powershell
+docker compose down -v
+docker compose up --build
+```
+
+Eso borra los datos guardados por esa base (incluido cualquier dato
+que hayas creado a mano) y los vuelve a cargar desde el `database.sql`
+actual.
+
+La clave de demo que trae `compose.yaml` sirve solo para aprender: no
+la uses en un servidor real. Si en algun momento queres la tuya
+(no hace falta para este curso), copia `.env.docker.example` a `.env`
+en esta misma carpeta y poné ahi tu propia `SECRET_KEY` (generala con
+`php -r "echo bin2hex(random_bytes(32));"`); `docker compose up` la
+toma automaticamente sin que tengas que tocar nada mas.
+
+Como esta API tiene su propio `compose.yaml`, su propio `Dockerfile` y
+su propia base de datos, la carpeta `api-simple/` se puede copiar sola
+(sin `api-completa/` ni el resto del repositorio) a otra maquina y
+levantarse igual.
+
+### Opcion B: instalar todo a mano (sin Docker)
+
 Esta seccion asume que no tenes nada instalado todavia. Segui los pasos en orden, sin saltear ninguno.
 
-### Paso 0: Que necesitas tener instalado
+#### Paso 0: Que necesitas tener instalado
 
 | Herramienta | Para que sirve | Como conseguirla |
 |---|---|---|
@@ -262,7 +331,7 @@ mysql --version
 
 Los tres comandos tienen que devolver una version. Si alguno da error tipo "no se reconoce como un comando", esa herramienta no quedo bien instalada o no esta en el PATH: volve a instalarla o reinicia la terminal (a veces alcanza con cerrarla y abrirla de nuevo despues de instalar algo).
 
-### Paso 1: Ubicarte en la carpeta correcta
+#### Paso 1: Ubicarte en la carpeta correcta
 
 Todos los comandos de esta guia se ejecutan desde la carpeta `api-simple/` (la que tiene este mismo `README.md` adentro, no la carpeta raiz del repositorio que tiene `api-simple/` y `api-completa/` juntas).
 
@@ -272,11 +341,11 @@ cd api-simple
 
 Si te perdiste, corre `ls` (o `dir`): tendrias que ver `index.php`, `config.php`, `composer.json`, etc.
 
-### Paso 2: Crear la base de datos
+#### Paso 2: Crear la base de datos
 
-Con MySQL corriendo (en Laragon/XAMPP se prende desde su panel), importa `database.sql`. Elegi una opcion:
+Con MySQL corriendo (en Laragon/XAMPP se prende desde su panel), importa `database.sql`. Elegi una alternativa:
 
-**Opcion A - linea de comandos:**
+**Por linea de comandos:**
 
 ```powershell
 mysql -u root -p < database.sql
@@ -284,16 +353,25 @@ mysql -u root -p < database.sql
 
 Va a pedir la contrasena del usuario `root` de MySQL. Si nunca la configuraste (comun en instalaciones locales tipo Laragon), probablemente sea vacia: apreta Enter sin escribir nada.
 
-**Opcion B - phpMyAdmin (mas visual, viene con Laragon/XAMPP):**
+**Por phpMyAdmin (mas visual, viene con Laragon/XAMPP):**
 
 1. Abrir phpMyAdmin (`http://localhost/phpmyadmin` en la mayoria de las instalaciones).
 2. Pestana "Importar".
 3. Elegir el archivo `database.sql` de esta carpeta.
 4. Click en "Continuar" / "Import".
 
-Cualquiera de las dos opciones crea la base `utu_demo`, las tablas `usuarios` y `productos`, y carga usuarios y productos de prueba.
+Cualquiera de las dos opciones crea la base `utu_demo`, sus tablas, y carga los datos de prueba.
 
-### Paso 3: Crear el archivo `.env`
+**Si ya tenias la base creada de antes y `database.sql` cambio** (por ejemplo, trajiste cambios nuevos con `git pull` y aparecieron tablas o columnas que todavia no tenes), hay que volver a importarla para que los cambios entren. MySQL no actualiza una base ya creada solo con volver a correr el archivo: hay que borrarla primero.
+
+```powershell
+mysql -u root -p -e "DROP DATABASE utu_demo;"
+mysql -u root -p < database.sql
+```
+
+`DROP DATABASE` borra la base entera, incluido cualquier dato que hayas creado o modificado a mano (usuarios, productos nuevos, etc.). Los datos de ejemplo se cargan solos al reimportar.
+
+#### Paso 3: Crear el archivo `.env`
 
 La API necesita un archivo `.env` con su configuracion local (ver seccion "Para que sirve cada carpeta y archivo" mas arriba). Se crea copiando la plantilla:
 
@@ -318,7 +396,7 @@ Si `SECRET_KEY` queda vacia o igual al valor de ejemplo, la API se niega a arran
 
 El `.env` no se sube a Git: cada uno tiene el suyo, con sus propios datos.
 
-### Paso 4: Instalar las dependencias
+#### Paso 4: Instalar las dependencias
 
 ```powershell
 composer install
@@ -326,7 +404,7 @@ composer install
 
 Esto lee `composer.json` y descarga la libreria `firebase/php-jwt` dentro de una carpeta nueva `vendor/`. Puede tardar unos segundos. Si no corres este paso, la API va a fallar apenas intente crear un token (error tipo "Class Firebase\JWT\JWT not found").
 
-### Paso 5: Iniciar el servidor
+#### Paso 5: Iniciar el servidor
 
 Con PHP trae un servidor propio para desarrollo, no hace falta instalar Apache ni Nginx para probar localmente:
 
@@ -336,7 +414,7 @@ php -S localhost:8000 index.php
 
 Si ves algo como `PHP 8.x Development Server ... started`, quedo levantada. Dejala corriendo ahi: esa terminal queda "ocupada" mientras la API esta prendida. Para pararla, `Ctrl + C`.
 
-### Paso 6: Probar que funciona
+#### Paso 6: Probar que funciona
 
 Abri el navegador en:
 
@@ -346,7 +424,7 @@ http://localhost:8000/productos
 
 Si ves una lista de productos en formato JSON, todo esta funcionando. Si ves una pagina en blanco o un error, revisa la seccion de abajo.
 
-### Errores comunes al levantarla
+#### Errores comunes al levantarla
 
 | Que ves | Que significa | Como arreglarlo |
 |---|---|---|
@@ -358,49 +436,6 @@ Si ves una lista de productos en formato JSON, todo esta funcionando. Si ves una
 | `Failed to listen on localhost:8000... Address already in use` | Ya hay algo corriendo en ese puerto (quiza otra terminal con la misma API) | Cerra la otra terminal, o arranca en otro puerto: `php -S localhost:8080 index.php` |
 | `Class "Firebase\JWT\JWT" not found` | No corriste `composer install`, o no existe la carpeta `vendor/` | Volve al Paso 4 |
 | Pagina en blanco sin ningun mensaje | Suele ser un error de PHP que no se esta mostrando | Mira la terminal donde corre `php -S`: los errores se imprimen ahi |
-
-### Alternativa: levantarla con Docker
-
-Si preferis no instalar PHP, Composer ni MySQL a mano, esta carpeta (`api-simple/`) trae todo lo necesario para levantarse sola con Docker: no hace falta tener descargado el resto del repositorio ni la otra API. Es otra forma de llegar al mismo resultado del Paso 0 al Paso 6; no hace falta hacer las dos.
-
-Necesitas [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado y abierto.
-
-1. Ubicate en esta carpeta (`api-simple/`) y crea el `.env` para Docker:
-
-```powershell
-Copy-Item .env.docker.example .env
-```
-
-2. Genera una clave y pegala en `SECRET_KEY` dentro de ese `.env`:
-
-```powershell
-php -r "echo bin2hex(random_bytes(32));"
-```
-
-3. Levantar todo (API + su propia base MySQL):
-
-```powershell
-docker compose up --build
-```
-
-La primera vez descarga imagenes, instala dependencias con Composer dentro del container y crea la base de datos con `database.sql`. Dejalo corriendo en esa terminal.
-
-4. Probar:
-
-```text
-http://localhost:8001/productos
-```
-
-Comandos utiles, desde esta misma carpeta:
-
-```powershell
-docker compose ps            # ver containers
-docker compose logs -f       # ver logs
-docker compose down          # detener
-docker compose down -v       # detener y borrar tambien la base de datos
-```
-
-Como esta API tiene su propio `compose.yaml`, su propio `Dockerfile` y su propia base de datos, la carpeta `api-simple/` se puede copiar sola (sin `api-completa/` ni el resto del repositorio) a otra maquina y levantarse igual.
 
 ## Como probar pedidos
 

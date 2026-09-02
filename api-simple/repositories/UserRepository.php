@@ -55,7 +55,12 @@ class UserRepository extends Repository
         ]);
 
         // lastInsertId() devuelve el id que le puso la base.
-        return $this->findById((int) $this->db->lastInsertId());
+
+       $id = (int) $this->db->lastInsertId();
+
+        $registroCreado = $this->findById($id);
+
+        return $registroCreado;
     }
 
     /**

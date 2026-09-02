@@ -130,6 +130,7 @@ En `docs/` hay material de apoyo:
 | `docs/docker.md` | Docker, Compose, puertos y volumenes |
 | `docs/uso-de-ia.md` | como usar IA para aprender |
 | `docs/mejoras-opcionales-api-completa.md` | hoja de ruta opcional para acercar `api-completa` a una API profesional |
+| `docs/ejercicio-nueva-entidad.md` | letra del ejercicio grupal: agregar el endpoint de Ventas a `api-simple` (un endpoint por grupo) |
 
 ## Nota sobre nombres
 

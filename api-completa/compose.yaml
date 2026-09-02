@@ -27,8 +27,12 @@ services:
       context: .
       dockerfile: docker/php-apache/Dockerfile
     environment:
-      APP_ENV: ${APP_ENV:-production}
-      SECRET_KEY: "${SECRET_KEY:?Copia .env.docker.example a .env y configura SECRET_KEY}"
+      APP_ENV: ${APP_ENV:-development}
+      # Clave de DEMO para que "docker compose up" funcione sin pasos
+      # previos. Sirve solo para aprender: no la uses en un servidor
+      # real. Si queres la tuya, copia .env.docker.example a .env y
+      # sobreescribi SECRET_KEY ahi (esta linea la toma automaticamente).
+      SECRET_KEY: ${SECRET_KEY:-f6e5d4c3b2a1908f7e6d5c4b3a29180716253445362718293a4b5c6d7e8f9a0}
       TOKEN_LIFETIME: ${TOKEN_LIFETIME:-3600}
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
       DB_HOST: database
