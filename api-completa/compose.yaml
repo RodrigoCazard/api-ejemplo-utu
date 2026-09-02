@@ -1,0 +1,45 @@
+name: api-completa
+
+services:
+  database:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: utu_demo
+      MYSQL_USER: utu_user
+      MYSQL_PASSWORD: ${DB_PASSWORD:-utu_password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+    ports:
+      - "${MYSQL_PORT:-3308}:3306"
+    volumes:
+      # Los datos sobreviven aunque se detengan o vuelvan a crear los containers.
+      - mysql_data:/var/lib/mysql
+
+      # MySQL ejecuta este archivo solamente la primera vez que crea el volumen.
+      - ./database.sql:/docker-entrypoint-initdb.d/01-database.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/php-apache/Dockerfile
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      SECRET_KEY: "${SECRET_KEY:?Copia .env.docker.example a .env y configura SECRET_KEY}"
+      TOKEN_LIFETIME: ${TOKEN_LIFETIME:-3600}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
+      DB_HOST: database
+      DB_NAME: utu_demo
+      DB_USER: utu_user
+      DB_PASSWORD: ${DB_PASSWORD:-utu_password}
+    ports:
+      - "${API_PORT:-8002}:80"
+    depends_on:
+      database:
+        condition: service_healthy
+
+volumes:
+  mysql_data:

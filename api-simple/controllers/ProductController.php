@@ -153,6 +153,7 @@ class ProductController
         $data = getJsonBody();
 
         $errors = [];
+        // Validamos solo los campos que vienen, y los normalizamos. En versiones avanzadas esto se conoce como "DTO" (Data Transfer Object) y se hace con una clase aparte. Acá lo hacemos rapido en el controller.
         $allowedFields = ['nombre', 'descripcion', 'precio', 'stock', 'categoria'];
         $receivedFields = array_intersect(array_keys($data), $allowedFields);
 
@@ -160,6 +161,7 @@ class ProductController
             $errors[] = 'No mandaste ningun campo valido para cambiar.';
         }
 
+        // Validamos los campos recibidos
         if (array_key_exists('nombre', $data)
             && (!is_string($data['nombre']) || strlen(trim($data['nombre'])) < 3)) {
             $errors[] = 'El nombre tiene que tener al menos 3 letras.';

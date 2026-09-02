@@ -1,108 +1,60 @@
-﻿# Docker en este proyecto
+# Docker en este proyecto
 
-Este proyecto usa Docker para levantar dos APIs PHP y una base MySQL compartida.
+Cada API (`api-simple/` y `api-completa/`) trae su propio Docker: su propio `compose.yaml`, su propio `Dockerfile` y su propio `.env.docker.example`, dentro de su propia carpeta. Son independientes entre si: se puede copiar una sola carpeta a otra maquina y levantarla sin la otra y sin el resto del repositorio.
 
-```text
-localhost:8001 -> api-simple
-localhost:8002 -> api-completa
-localhost:3307 -> MySQL
-```
+Este documento explica los conceptos generales. Para los comandos y puertos concretos de cada API, mira su propio README:
 
-## Servicios
+- [`api-simple/README.md`](../api-simple/README.md#alternativa-levantarla-con-docker)
+- [`api-completa/README.md`](../api-completa/README.md#alternativa-levantarla-con-docker)
+
+## Que arma cada `compose.yaml`
+
+Cada API levanta dos servicios propios:
 
 | Servicio | Para que sirve |
 |---|---|
-| `database` | MySQL con los datos de ejemplo |
-| `api-simple` | primera API, con enrutado directo en `index.php` |
-| `api-completa` | API mas ordenada, con `Router`, DTOs, validators y middleware |
+| `database` | Un MySQL propio de esa API, con los datos de ejemplo de su `database.sql` |
+| `api` | La API en si, corriendo con PHP + Apache |
 
-## Levantar todo
+Como cada API tiene su propia base (`database`) y su propio volumen, no comparten datos entre si: son dos proyectos Docker completamente separados, aunque ambos usen el mismo esquema de tablas.
 
-Desde la raiz del proyecto:
+## Puertos por defecto
 
-```powershell
-docker compose up --build
-```
+| API | Puerto de la API | Puerto de MySQL |
+|---|---|---|
+| `api-simple` | `8001` | `3307` |
+| `api-completa` | `8002` | `3308` |
 
-La primera vez Docker descarga imagenes, instala dependencias y crea la base de datos.
+Son distintos a proposito: si alguna vez levantas las dos al mismo tiempo (cada una desde su propia carpeta, con su propio `docker compose up`), no chocan entre si. Se pueden cambiar editando `API_PORT` y `MYSQL_PORT` en el `.env` de cada carpeta.
 
-## Probar en el navegador
+## Comandos utiles
 
-```text
-http://localhost:8001
-http://localhost:8002
-```
-
-## Endpoints utiles
-
-API simple:
-
-```text
-GET  http://localhost:8001/productos
-POST http://localhost:8001/login
-GET  http://localhost:8001/perfil
-```
-
-API completa:
-
-```text
-GET  http://localhost:8002/productos
-POST http://localhost:8002/login
-GET  http://localhost:8002/perfil
-POST http://localhost:8002/logout
-```
-
-## Ver estado
+Se ejecutan parado en la carpeta de la API que queres controlar (`api-simple/` o `api-completa/`):
 
 ```powershell
-docker compose ps
+docker compose up --build   # levantar (primera vez o tras cambiar el Dockerfile)
+docker compose ps           # ver containers
+docker compose logs -f      # ver logs
+docker compose down         # detener
+docker compose down -v      # detener y borrar tambien el volumen de MySQL
 ```
 
-## Ver logs
-
-Todos los servicios:
-
-```powershell
-docker compose logs -f
-```
-
-Solo una API:
-
-```powershell
-docker compose logs -f api-simple
-docker compose logs -f api-completa
-```
-
-## Detener
-
-```powershell
-docker compose down
-```
-
-## Empezar desde cero
-
-```powershell
-docker compose down -v
-docker compose up --build
-```
-
-`down -v` borra el volumen de MySQL. Eso elimina los datos guardados por Docker.
+`down -v` borra los datos guardados por esa base. Usarlo solo cuando quieras empezar desde cero.
 
 ## Variables importantes
 
-El archivo `.env.docker.example` muestra las variables que se pueden configurar:
+El `.env.docker.example` de cada carpeta muestra las variables que se pueden configurar. Por ejemplo, en `api-simple/.env.docker.example`:
 
 ```env
 SECRET_KEY=
 APP_ENV=development
 TOKEN_LIFETIME=3600
-FRONTEND_ORIGIN=http://localhost:5173
 DB_PASSWORD=utu_password
 MYSQL_ROOT_PASSWORD=root_password
-API_SIMPLE_PORT=8001
-API_COMPLETA_PORT=8002
+API_PORT=8001
 MYSQL_PORT=3307
 ```
 
-`SECRET_KEY` se usa para firmar tokens. En un proyecto real no se sube una clave secreta a Git.
+`api-completa/.env.docker.example` tiene ademas `FRONTEND_ORIGIN`, porque esa API usa una cookie `HttpOnly` y necesita saber que origen del frontend puede recibirla por CORS.
 
+`SECRET_KEY` se usa para firmar tokens. En un proyecto real no se sube una clave secreta a Git; por eso cada `.env` (no `.env.docker.example`) esta en `.gitignore`.

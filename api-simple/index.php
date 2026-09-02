@@ -72,6 +72,8 @@ require_once __DIR__ . '/controllers/ProductController.php';
 // ------------------------------------------------------------------
 // 2) CORS
 // ------------------------------------------------------------------
+// No recomendado en producción: "*" permite peticiones desde cualquier origen.
+// Lo ideal es reemplazarlo por la dirección de nuestro propio frontend.
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 header('Access-Control-Allow-Methods: GET, POST, PATCH, DELETE, OPTIONS');
@@ -133,10 +135,12 @@ $count = count($parts);
 try {
     switch (true) {
 
-
+      
         // ---- Entrar al sistema -------------------------------------
         case $method === 'POST' && $count === 1 && $parts[0] === 'registro':
             // POST /registro
+            // $authContoller = new AuthController();
+            // $authContoller->register();
             (new AuthController())->register();
             break;
 

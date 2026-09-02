@@ -1,0 +1,5 @@
+.env
+vendor
+*.md
+*.http
+database.sql

@@ -26,7 +26,7 @@
  */
 class Router
 {
-    /** Acá se van guardando todas las rutas. */
+    /** Acá se van guardando todas las rutas(endpoints) de la API. */
     private array $routes = [];
 
    
@@ -55,7 +55,7 @@ class Router
 
             // ¿Es el mismo método? (GET, POST...)
             if ($route['method'] !== $method) {
-                continue; // no es esta, sigo con la próxima
+                continue; // no es esta, sigo con la próxima, es decir continua el siguiente bucle del foreach
             }
 
             // ¿Tienen la misma cantidad de pedazos?

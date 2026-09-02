@@ -240,62 +240,200 @@ API simple no tiene `/logout`: cerrar sesion significa borrar el token del front
 
 ## Como levantarla localmente
 
-Necesitas PHP 8, Composer, la extension `pdo_mysql` y MySQL.
+Esta seccion asume que no tenes nada instalado todavia. Segui los pasos en orden, sin saltear ninguno.
 
-1. Crear la base:
+### Paso 0: Que necesitas tener instalado
 
-```bash
+| Herramienta | Para que sirve | Como conseguirla |
+|---|---|---|
+| PHP 8 o superior | Ejecuta el codigo de la API | En Windows, lo mas facil es instalar [Laragon](https://laragon.org/download/) o [XAMPP](https://www.apachefriends.org/es/index.html): traen PHP y MySQL juntos, sin configurar nada aparte |
+| Extension `pdo_mysql` de PHP | Permite que PHP hable con MySQL | Ya viene activada en Laragon/XAMPP. Si instalaste PHP "a mano", hay que habilitarla en `php.ini` |
+| MySQL (o MariaDB) | Guarda los datos (usuarios, productos) | Viene incluido en Laragon/XAMPP |
+| [Composer](https://getcomposer.org/download/) | Descarga las librerias que usa el proyecto (ver seccion "Composer" mas abajo) | Instalador para Windows en el link. Laragon tambien lo puede instalar desde su menu |
+| Postman o Insomnia (opcional pero recomendado) | Probar `POST`, `PATCH` y `DELETE`, que no se pueden probar solo desde el navegador | [Postman](https://www.postman.com/downloads/) |
+
+Verifica que todo quedo instalado y visible desde la terminal. Abri una terminal (PowerShell) y corre, uno por uno:
+
+```powershell
+php -v
+composer -V
+mysql --version
+```
+
+Los tres comandos tienen que devolver una version. Si alguno da error tipo "no se reconoce como un comando", esa herramienta no quedo bien instalada o no esta en el PATH: volve a instalarla o reinicia la terminal (a veces alcanza con cerrarla y abrirla de nuevo despues de instalar algo).
+
+### Paso 1: Ubicarte en la carpeta correcta
+
+Todos los comandos de esta guia se ejecutan desde la carpeta `api-simple/` (la que tiene este mismo `README.md` adentro, no la carpeta raiz del repositorio que tiene `api-simple/` y `api-completa/` juntas).
+
+```powershell
+cd api-simple
+```
+
+Si te perdiste, corre `ls` (o `dir`): tendrias que ver `index.php`, `config.php`, `composer.json`, etc.
+
+### Paso 2: Crear la base de datos
+
+Con MySQL corriendo (en Laragon/XAMPP se prende desde su panel), importa `database.sql`. Elegi una opcion:
+
+**Opcion A - linea de comandos:**
+
+```powershell
 mysql -u root -p < database.sql
 ```
 
-Tambien se puede importar `database.sql` desde phpMyAdmin.
+Va a pedir la contrasena del usuario `root` de MySQL. Si nunca la configuraste (comun en instalaciones locales tipo Laragon), probablemente sea vacia: apreta Enter sin escribir nada.
 
-2. Crear `.env`:
+**Opcion B - phpMyAdmin (mas visual, viene con Laragon/XAMPP):**
 
-```bash
-cp .env.example .env
+1. Abrir phpMyAdmin (`http://localhost/phpmyadmin` en la mayoria de las instalaciones).
+2. Pestana "Importar".
+3. Elegir el archivo `database.sql` de esta carpeta.
+4. Click en "Continuar" / "Import".
+
+Cualquiera de las dos opciones crea la base `utu_demo`, las tablas `usuarios` y `productos`, y carga usuarios y productos de prueba.
+
+### Paso 3: Crear el archivo `.env`
+
+La API necesita un archivo `.env` con su configuracion local (ver seccion "Para que sirve cada carpeta y archivo" mas arriba). Se crea copiando la plantilla:
+
+```powershell
+Copy-Item .env.example .env
 ```
 
-En Windows CMD:
+(En Windows CMD en lugar de PowerShell seria `copy .env.example .env`; en Linux/Mac, `cp .env.example .env`.)
 
-```bat
-copy .env.example .env
-```
+Ahora abri el `.env` recien creado con un editor de texto (VS Code, Notepad++, etc.) y revisa:
 
-Revisa `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `SECRET_KEY` y `APP_ENV`.
-Usa `APP_ENV=development` en local y `APP_ENV=production` antes de publicar.
-El `.env` no se sube a Git.
+| Variable | Que poner |
+|---|---|
+| `SECRET_KEY` | Una clave al azar, nunca la de ejemplo. Generala corriendo `php -r "echo bin2hex(random_bytes(32));"` y pegando el resultado |
+| `APP_ENV` | `development` mientras estas aprendiendo/probando en tu maquina |
+| `DB_HOST` | `localhost` (dejalo asi salvo que tu MySQL corra en otro lado) |
+| `DB_NAME` | `utu_demo` (tiene que coincidir con lo que creo `database.sql`) |
+| `DB_USER` | El usuario de tu MySQL, normalmente `root` en instalaciones locales |
+| `DB_PASSWORD` | La contrasena de ese usuario. Vacio si no le pusiste ninguna |
 
-3. Instalar dependencias:
+Si `SECRET_KEY` queda vacia o igual al valor de ejemplo, la API se niega a arrancar a proposito (es una medida de seguridad, no un bug: ver `config.php`).
 
-```bash
+El `.env` no se sube a Git: cada uno tiene el suyo, con sus propios datos.
+
+### Paso 4: Instalar las dependencias
+
+```powershell
 composer install
 ```
 
-4. Iniciar servidor:
+Esto lee `composer.json` y descarga la libreria `firebase/php-jwt` dentro de una carpeta nueva `vendor/`. Puede tardar unos segundos. Si no corres este paso, la API va a fallar apenas intente crear un token (error tipo "Class Firebase\JWT\JWT not found").
 
-```bash
-cd api-simple
+### Paso 5: Iniciar el servidor
+
+Con PHP trae un servidor propio para desarrollo, no hace falta instalar Apache ni Nginx para probar localmente:
+
+```powershell
 php -S localhost:8000 index.php
 ```
 
-5. Probar:
+Si ves algo como `PHP 8.x Development Server ... started`, quedo levantada. Dejala corriendo ahi: esa terminal queda "ocupada" mientras la API esta prendida. Para pararla, `Ctrl + C`.
+
+### Paso 6: Probar que funciona
+
+Abri el navegador en:
 
 ```text
 http://localhost:8000/productos
 ```
 
-Tambien podes levantar las dos aplicaciones y MySQL con Docker siguiendo el [README principal](../README.md#levantar-con-docker).
+Si ves una lista de productos en formato JSON, todo esta funcionando. Si ves una pagina en blanco o un error, revisa la seccion de abajo.
+
+### Errores comunes al levantarla
+
+| Que ves | Que significa | Como arreglarlo |
+|---|---|---|
+| `APP_ENV debe ser development o production` | Falta el `.env`, o `APP_ENV` esta mal escrito o vacio | Revisa que exista `.env` (no `.env.example`) y que diga `APP_ENV=development` |
+| `Falta configurar SECRET_KEY...` | `SECRET_KEY` esta vacia o quedo con el valor de ejemplo | Genera una clave nueva (ver Paso 3) y pegala en `.env` |
+| `could not find driver` | Falta la extension `pdo_mysql` de PHP | Con Laragon/XAMPP ya deberia estar. Si instalaste PHP manual, edita `php.ini` y descomenta (saca el `;`) la linea `extension=pdo_mysql`, despues reinicia el servidor |
+| `SQLSTATE[HY000] [1045] Access denied for user...` | `DB_USER`/`DB_PASSWORD` del `.env` no coinciden con tu MySQL | Revisa esos dos valores en `.env` |
+| `SQLSTATE[HY000] [1049] Unknown database 'utu_demo'` | No se importo `database.sql` todavia | Volve al Paso 2 |
+| `Failed to listen on localhost:8000... Address already in use` | Ya hay algo corriendo en ese puerto (quiza otra terminal con la misma API) | Cerra la otra terminal, o arranca en otro puerto: `php -S localhost:8080 index.php` |
+| `Class "Firebase\JWT\JWT" not found` | No corriste `composer install`, o no existe la carpeta `vendor/` | Volve al Paso 4 |
+| Pagina en blanco sin ningun mensaje | Suele ser un error de PHP que no se esta mostrando | Mira la terminal donde corre `php -S`: los errores se imprimen ahi |
+
+### Alternativa: levantarla con Docker
+
+Si preferis no instalar PHP, Composer ni MySQL a mano, esta carpeta (`api-simple/`) trae todo lo necesario para levantarse sola con Docker: no hace falta tener descargado el resto del repositorio ni la otra API. Es otra forma de llegar al mismo resultado del Paso 0 al Paso 6; no hace falta hacer las dos.
+
+Necesitas [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado y abierto.
+
+1. Ubicate en esta carpeta (`api-simple/`) y crea el `.env` para Docker:
+
+```powershell
+Copy-Item .env.docker.example .env
+```
+
+2. Genera una clave y pegala en `SECRET_KEY` dentro de ese `.env`:
+
+```powershell
+php -r "echo bin2hex(random_bytes(32));"
+```
+
+3. Levantar todo (API + su propia base MySQL):
+
+```powershell
+docker compose up --build
+```
+
+La primera vez descarga imagenes, instala dependencias con Composer dentro del container y crea la base de datos con `database.sql`. Dejalo corriendo en esa terminal.
+
+4. Probar:
+
+```text
+http://localhost:8001/productos
+```
+
+Comandos utiles, desde esta misma carpeta:
+
+```powershell
+docker compose ps            # ver containers
+docker compose logs -f       # ver logs
+docker compose down          # detener
+docker compose down -v       # detener y borrar tambien la base de datos
+```
+
+Como esta API tiene su propio `compose.yaml`, su propio `Dockerfile` y su propia base de datos, la carpeta `api-simple/` se puede copiar sola (sin `api-completa/` ni el resto del repositorio) a otra maquina y levantarse igual.
 
 ## Como probar pedidos
 
-Para empezar, abri en el navegador:
+### Peticiones GET (desde el navegador)
+
+Para las rutas publicas de solo lectura alcanza con pegar la URL en el navegador:
 
 ```text
 http://localhost:8000/productos
+http://localhost:8000/productos/1
 ```
 
-Para `POST`, `PATCH` y `DELETE`, usa Postman, Insomnia o el frontend que conectes a esta API.
+### Peticiones POST, PATCH y DELETE (con Postman o Insomnia)
+
+El navegador, escribiendo una URL, solo puede hacer `GET`. Para el resto de los metodos hace falta una herramienta como Postman:
+
+1. Crear una nueva peticion.
+2. Elegir el metodo (`POST`, `PATCH` o `DELETE`) y pegar la URL, por ejemplo `http://localhost:8000/login`.
+3. Si la peticion manda datos (como `/login` o `/registro`), ir a la pestana "Body", elegir "raw" y tipo "JSON", y escribir el JSON. Por ejemplo, para `/login`:
+
+```json
+{
+  "email": "admin@utu.edu.uy",
+  "clave": "admin123"
+}
+```
+
+4. Enviar (`Send`). La respuesta trae un `token` si el login sale bien.
+5. Para las rutas protegidas (como crear un producto), copiar ese token y agregarlo en la pestana "Headers" de la siguiente peticion:
+
+```text
+Authorization: Bearer TOKEN_AQUI
+```
 
 Usuarios de prueba:
 

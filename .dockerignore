@@ -1,9 +1,0 @@
-.git
-.gitignore
-.env
-**/.env
-**/vendor
-docs
-**/*.md
-**/*.http
-**/database.sql

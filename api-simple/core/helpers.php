@@ -35,6 +35,7 @@ function getJsonBody(): array
         return [];
     }
 
+    //transformo a array asociativo (true) para poder acceder a los datos con $data['nombre'] en vez de $data->nombre.
     $data = json_decode($json, true);
 
     // Verificamos que el body contenga un JSON válido.

@@ -2,7 +2,7 @@
 
 Este proyecto muestra una API de productos hecha en PHP y MySQL. La idea es avanzar de a poco: primero una version simple y despues una version mas completa.
 
-Quedan solo dos aplicaciones:
+Quedando solo dos aplicaciones:
 
 | Aplicacion | Carpeta | Idea principal | Puerto Docker |
 |---|---|---|---|
@@ -15,12 +15,10 @@ El material queda enfocado en dos aplicaciones: una simple para empezar y una co
 
 ```text
 api-simple/
-  api-simple/
-  api-completa/
-  docker/
-  docs/
-  compose.yaml
-  README.md
+  api-simple/       API simple: se copia y levanta sola (local o Docker)
+  api-completa/     API completa: se copia y levanta sola (local o Docker)
+  docs/             material de apoyo, no hace falta para levantar nada
+  README.md         este archivo: explica y compara ambas APIs
 ```
 
 ## Que aprende cada aplicacion
@@ -91,44 +89,16 @@ POST http://localhost:8002/logout
 
 En esta aplicacion, el token no se copia manualmente. El backend lo guarda en una cookie `HttpOnly`.
 
-## Levantar con Docker
+## Cada API se levanta por separado
 
-Con Docker Desktop abierto, desde la raiz del proyecto:
+`api-simple/` y `api-completa/` son independientes entre si: cada una tiene adentro su propio `README.md`, su propio `composer.json`/`vendor/`, y su propia forma de levantarse con PHP local o con Docker (`compose.yaml`, `Dockerfile`, `.env.docker.example` propios).
 
-```powershell
-docker compose up --build
-```
+Esto es a proposito: cualquiera de las dos carpetas se puede copiar sola (sin la otra, sin esta raiz) a otra maquina y levantarse igual, sin depender de nada mas del repositorio.
 
-Cuando termine, las APIs quedan disponibles en estos puertos:
+Este README raiz solo explica y compara ambas aplicaciones. Para levantar una API, segui las instrucciones de su propio README:
 
-| Servicio | URL |
-|---|---|
-| API simple | `http://localhost:8001/productos` |
-| API completa | `http://localhost:8002/productos` |
-| MySQL | `localhost:3307` |
-
-## Configuracion local
-
-Si todavia no existe `.env`, copiar el ejemplo:
-
-```powershell
-Copy-Item .env.docker.example .env
-```
-
-Generar una clave secreta para firmar tokens:
-
-```powershell
-$bytes = [byte[]]::new(32)
-[Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
-[BitConverter]::ToString($bytes).Replace('-', '').ToLower()
-```
-
-Copiar el resultado en `.env`:
-
-```env
-SECRET_KEY=aca_va_la_clave_generada
-APP_ENV=development
-```
+- [`api-simple/README.md`](api-simple/README.md#como-levantarla-localmente) - PHP local o Docker, puerto `8001` en Docker.
+- [`api-completa/README.md`](api-completa/README.md#como-levantarla-localmente) - PHP local o Docker, puerto `8002` en Docker.
 
 ## Usuarios de prueba
 
@@ -147,34 +117,6 @@ APP_ENV=development
 6. Comparar el `switch` de API simple con el `Router` de API completa.
 7. Ver DTOs, validators, middleware y cookie HttpOnly.
 
-## Comandos utiles
-
-Ver containers:
-
-```powershell
-docker compose ps
-```
-
-Ver logs:
-
-```powershell
-docker compose logs -f
-```
-
-Detener containers:
-
-```powershell
-docker compose down
-```
-
-Borrar tambien la base de datos Docker:
-
-```powershell
-docker compose down -v
-```
-
-`down -v` borra el volumen de MySQL. Usarlo solo cuando se quiera empezar desde cero.
-
 ## Documentacion
 
 En `docs/` hay material de apoyo:
@@ -187,6 +129,7 @@ En `docs/` hay material de apoyo:
 | `docs/seguridad-sqli-xss.md` | SQL injection y XSS |
 | `docs/docker.md` | Docker, Compose, puertos y volumenes |
 | `docs/uso-de-ia.md` | como usar IA para aprender |
+| `docs/mejoras-opcionales-api-completa.md` | hoja de ruta opcional para acercar `api-completa` a una API profesional |
 
 ## Nota sobre nombres
 

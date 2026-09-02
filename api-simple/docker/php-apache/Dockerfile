@@ -18,10 +18,9 @@ COPY docker/php-apache/app.conf /etc/apache2/conf-available/app.conf
 
 RUN a2enconf app
 
-# El mismo Dockerfile sirve para las dos aplicaciones. Compose decide qué
-# carpeta copiar mediante APP_DIR durante la construcción de cada imagen.
-ARG APP_DIR
-COPY ${APP_DIR}/ /var/www/html/
+# El contexto de build es esta misma carpeta (api-simple/), asi que esta
+# API se puede copiar sola a otra maquina y levantarla sin nada mas.
+COPY . /var/www/html/
 
 # Las dependencias se reconstruyen desde composer.lock. vendor no se copia
 # desde la computadora del estudiante.

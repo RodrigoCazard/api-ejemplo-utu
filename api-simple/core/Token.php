@@ -59,7 +59,7 @@ use Firebase\JWT\Key;
  * (comparar la firma con == en vez de en tiempo constante, aceptar el
  * algoritmo "none", olvidarse de mirar el vencimiento) deja la puerta
  * abierta. Esa libreria la revisaron y la atacaron miles de personas
- * durante anos. Nuestro codigo, no.
+ * durante años. Nuestro codigo, no.
  *
  * REGLA GENERAL: la seguridad no se improvisa. Contrasenas, tokens y
  * encriptacion se hacen con herramientas ya probadas.
