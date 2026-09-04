@@ -18,17 +18,17 @@
  */
 class ProductService
 {
-    private ProductRepository $repository;
+    private ProductRepository $productRepository;
 
     public function __construct()
     {
-        $this->repository = new ProductRepository();
+        $this->productRepository = new ProductRepository();
     }
 
     /** Devuelve la lista de productos, lista para mandar como JSON. */
     public function getAll($category = null)
     {
-        $products = $this->repository->findAll($category);
+        $products = $this->productRepository->findAll($category);
 
         $list = [];
 
@@ -42,7 +42,7 @@ class ProductService
     /** Devuelve un producto. Si no existe, corta con un 404. */
     public function getById($id)
     {
-        $product = $this->repository->findById($id);
+        $product = $this->productRepository->findById($id);
 
         if ($product === null) {
             // Response::error() contesta y TERMINA el programa,
@@ -62,7 +62,7 @@ class ProductService
     public function create(CreateProductDTO $dto)
     {
         // ->getName() lee el nombre privado y normalizado del DTO.
-        if ($this->repository->findByName($dto->getName()) !== null) {
+        if ($this->productRepository->findByName($dto->getName()) !== null) {
             Response::error('Ya existe un producto con ese nombre.', 400);
         }
 
@@ -75,7 +75,7 @@ class ProductService
             $dto->getCategory()
         );
 
-        $this->repository->create($product);
+        $this->productRepository->create($product);
 
         return $product->toArray();
     }
@@ -86,7 +86,7 @@ class ProductService
      */
     public function update($id, UpdateProductDTO $dto)
     {
-        $product = $this->repository->findById($id);
+        $product = $this->productRepository->findById($id);
 
         if ($product === null) {
             Response::error('No existe el producto ' . $id, 404);
@@ -114,7 +114,7 @@ class ProductService
             $product->setCategory($dto->get('categoria'));
         }
 
-        $this->repository->update($product);
+        $this->productRepository->update($product);
 
         return $product->toArray();
     }
@@ -127,7 +127,7 @@ class ProductService
      */
     public function delete($id)
     {
-        $product = $this->repository->findById($id);
+        $product = $this->productRepository->findById($id);
 
         if ($product === null) {
             Response::error('No existe el producto ' . $id, 404);
@@ -140,7 +140,7 @@ class ProductService
             );
         }
 
-        $this->repository->delete($id);
+        $this->productRepository->delete($id);
     }
 
     /**
@@ -159,7 +159,7 @@ class ProductService
         // El getter devuelve la cantidad entera transportada por el DTO.
         $quantity = $dto->getQuantity();
 
-        $product = $this->repository->findById($id);
+        $product = $this->productRepository->findById($id);
 
         // Regla 1: el producto tiene que existir.
         if ($product === null) {
@@ -177,7 +177,7 @@ class ProductService
         // Si pasó todas las reglas: descontamos y guardamos.
         $product->setStock($product->getStock() - $quantity);
 
-        $this->repository->update($product);
+        $this->productRepository->update($product);
 
         return [
             'vendidas'      => (int) $quantity,

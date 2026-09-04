@@ -13,11 +13,11 @@
  */
 class AuthService
 {
-    private UserRepository $repository;
+    private UserRepository $userRepository;
 
     public function __construct()
     {
-        $this->repository = new UserRepository();
+        $this->userRepository = new UserRepository();
     }
 
     /**
@@ -28,7 +28,7 @@ class AuthService
     {
         // Los getters leen los datos privados que transporta el DTO.
         // REGLA: el email es único.
-        if ($this->repository->findByEmail($dto->getEmail()) !== null) {
+        if ($this->userRepository->findByEmail($dto->getEmail()) !== null) {
             Response::error('Ya existe una cuenta con ese email.', 400);
         }
 
@@ -44,7 +44,7 @@ class AuthService
          */
         $passwordHash = password_hash($dto->getPassword(), PASSWORD_DEFAULT);
 
-        $user = $this->repository->create(
+        $user = $this->userRepository->create(
             $dto->getName(),
             $dto->getEmail(),
             $passwordHash
@@ -59,7 +59,7 @@ class AuthService
      */
     public function login(LoginDTO $dto)
     {
-        $user = $this->repository->findByEmail($dto->getEmail());
+        $user = $this->userRepository->findByEmail($dto->getEmail());
 
         /**
          * DETALLE DE SEGURIDAD:
@@ -90,7 +90,7 @@ class AuthService
      */
     public function getProfile($id)
     {
-        $user = $this->repository->findById($id);
+        $user = $this->userRepository->findById($id);
 
         if ($user === null) {
             Response::error('El usuario ya no existe.', 404);

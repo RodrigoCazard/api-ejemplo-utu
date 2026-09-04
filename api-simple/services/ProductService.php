@@ -18,17 +18,17 @@
  */
 class ProductService
 {
-    private ProductRepository $repository;
+    private ProductRepository $productRepository;
 
     public function __construct()
     {
-        $this->repository = new ProductRepository();
+        $this->productRepository = new ProductRepository();
     }
 
     /** Devuelve la lista de productos, lista para mandar como JSON. */
     public function getAll($category = null)
     {
-        $products = $this->repository->findAll($category);
+        $products = $this->productRepository->findAll($category);
 
         $list = [];
 
@@ -42,7 +42,7 @@ class ProductService
     /** Devuelve un producto. Si no existe, corta con un 404. */
     public function getById($id)
     {
-        $product = $this->repository->findById($id);
+        $product = $this->productRepository->findById($id);
 
         if ($product === null) {
             // Response::error() contesta y TERMINA el programa,
@@ -60,13 +60,13 @@ class ProductService
      */
     public function create($name, $description, $price, $stock, $category)
     {
-        if ($this->repository->findByName($name) !== null) {
+        if ($this->productRepository->findByName($name) !== null) {
             Response::error('Ya existe un producto con ese nombre.', 400);
         }
 
         $product = new Product(0, $name, $description, $price, $stock, $category);
 
-        $this->repository->create($product);
+        $this->productRepository->create($product);
 
         return $product->toArray();
     }
@@ -76,7 +76,7 @@ class ProductService
      */
     public function update($id, $data)
     {
-        $product = $this->repository->findById($id);
+        $product = $this->productRepository->findById($id);
 
         if ($product === null) {
             Response::error('No existe el producto ' . $id, 404);
@@ -85,7 +85,7 @@ class ProductService
         // La regla del nombre unico tambien se aplica cuando se modifica.
         // Si encontramos otro producto con ese nombre, el cambio se rechaza.
         if (isset($data['nombre'])) {
-            $productWithSameName = $this->repository->findByName($data['nombre']);
+            $productWithSameName = $this->productRepository->findByName($data['nombre']);
 
             if ($productWithSameName !== null
                 && $productWithSameName->getId() !== $product->getId()) {
@@ -116,7 +116,7 @@ class ProductService
             $product->setCategory($data['categoria']);
         }
 
-        $this->repository->update($product);
+        $this->productRepository->update($product);
 
         return $product->toArray();
     }
@@ -129,7 +129,7 @@ class ProductService
      */
     public function delete($id)
     {
-        $product = $this->repository->findById($id);
+        $product = $this->productRepository->findById($id);
 
         if ($product === null) {
             Response::error('No existe el producto ' . $id, 404);
@@ -142,7 +142,7 @@ class ProductService
             );
         }
 
-        $this->repository->delete($id);
+        $this->productRepository->delete($id);
     }
 
     /**
@@ -158,7 +158,7 @@ class ProductService
      */
     public function sell($id, $quantity)
     {
-        $product = $this->repository->findById($id);
+        $product = $this->productRepository->findById($id);
 
         // Regla 1: el producto tiene que existir.
         if ($product === null) {
@@ -181,7 +181,7 @@ class ProductService
         // Si paso todas las reglas: descontamos y guardamos.
         $product->setStock($product->getStock() - $quantity);
 
-        $this->repository->update($product);
+        $this->productRepository->update($product);
 
         return [
             'vendidas'      => (int) $quantity,

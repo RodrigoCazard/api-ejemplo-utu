@@ -31,6 +31,18 @@ class VentaRepository extends Repository
     //   getTotals()                     -> GET /ventas/resumen (COUNT/SUM)
     // ------------------------------------------------------------------
 
+
+    public function findById($id)
+    {
+        $sql = 'SELECT * FROM ventas WHERE id = :id';
+
+        $query = $this->db->prepare($sql);
+        $query->execute([':id' => $id]);
+        $row = $query->fetch();
+
+        return $row === false ? null : $this->buildVenta($row);
+    }
+    
     /** De fila de la base (arreglo) a OBJETO Venta. Ya esta resuelto. */
     private function buildVenta($row)
     {

@@ -56,22 +56,26 @@ require_once __DIR__ . '/core/helpers.php';
 require_once __DIR__ . '/models/User.php';
 require_once __DIR__ . '/models/Product.php';
 require_once __DIR__ . '/models/Venta.php';
+require_once __DIR__ . '/models/Review.php';
 
 // Repositories
 require_once __DIR__ . '/repositories/Repository.php';
 require_once __DIR__ . '/repositories/UserRepository.php';
 require_once __DIR__ . '/repositories/ProductRepository.php';
 require_once __DIR__ . '/repositories/VentaRepository.php';
+require_once __DIR__ . '/repositories/ReviewRepository.php';
 
 // Services
 require_once __DIR__ . '/services/AuthService.php';
 require_once __DIR__ . '/services/ProductService.php';
 require_once __DIR__ . '/services/VentaService.php';
+require_once __DIR__ . '/services/ReviewService.php';
 
 // Controllers
 require_once __DIR__ . '/controllers/AuthController.php';
 require_once __DIR__ . '/controllers/ProductController.php';
 require_once __DIR__ . '/controllers/VentaController.php';
+require_once __DIR__ . '/controllers/ReviewController.php';
 
 // ------------------------------------------------------------------
 // 2) CORS
@@ -190,14 +194,6 @@ try {
             (new ProductController())->sellProduct($parts[1]);
             break;
 
-        // Grupo 5 del ejercicio de Ventas: historial de ventas de UN producto.
-        // Va aca (seccion Productos) porque la ruta empieza con /productos,
-        // aunque el metodo viva en VentaController.
-        // case $method === 'GET' && $count === 3 && $parts[0] === 'productos' && $parts[2] === 'ventas':
-        //     // GET /productos/3/ventas  ->  $parts[1] es el id del producto ('3')
-        //     (new VentaController())->listSalesByProduct($parts[1]);
-        //     break;
-
         // ---- Ventas (ejercicio grupal, ver docs/ejercicio-nueva-entidad.md) ----
         // Cada grupo descomenta SOLO su case, una vez que su metodo en
         // VentaController ya existe. No descomenten el de otro grupo.
@@ -208,6 +204,11 @@ try {
         // revienta el validateId(). Es el mismo motivo por el que en general
         // "el orden importa: rutas mas especificas primero" (mira el
         // comentario al principio de este switch).
+
+        // case $method === 'GET' && $count === 3 && $parts[0] === 'productos' && $parts[2] === 'ventas':
+        //      GET /productos/3/ventas  ->  $parts[1] es el id del producto ('3')
+        //     (new VentaController())->listSalesByProduct($parts[1]);
+        //     break;
 
         // case $method === 'GET' && $count === 1 && $parts[0] === 'ventas':
         //     // GET /ventas
@@ -232,6 +233,21 @@ try {
         // case $method === 'POST' && $count === 3 && $parts[0] === 'ventas' && $parts[2] === 'anular':
         //     // POST /ventas/3/anular
         //     (new VentaController())->cancelSale($parts[1]);
+        //     break;
+
+        // ---- Reviews (entidad nueva minima, mismo espiritu que Ventas) ----
+        // Esqueleto listo (tabla + Model + Repository/Service/Controller
+        // vacios): descomentar cuando los metodos de ReviewController ya
+        // existan.
+
+        // case $method === 'GET' && $count === 3 && $parts[0] === 'productos' && $parts[2] === 'reviews':
+        //     // GET /productos/3/reviews  ->  $parts[1] es el id del producto ('3')
+        //     (new ReviewController())->listReviewsByProduct($parts[1]);
+        //     break;
+
+        // case $method === 'POST' && $count === 3 && $parts[0] === 'productos' && $parts[2] === 'reviews':
+        //     // POST /productos/3/reviews  (hay que estar logueado)
+        //     (new ReviewController())->createReview($parts[1]);
         //     break;
 
         // ---- Nada coincidio ---------------------------------------

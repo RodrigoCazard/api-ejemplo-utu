@@ -19,11 +19,11 @@
  */
 class VentaController
 {
-    private VentaService $service;
+    private VentaService $ventaService;
 
     public function __construct()
     {
-        $this->service = new VentaService();
+        $this->ventaService = new VentaService();
     }
 
     // ------------------------------------------------------------------
@@ -38,4 +38,14 @@ class VentaController
     //   listSalesByProduct($id)      -> GET  /productos/{id}/ventas
     //   salesSummary()               -> GET  /ventas/resumen
     // ------------------------------------------------------------------
-}
+
+    public function getSale($id)
+        {
+            $user = requireLogin();
+
+            $venta = $this->ventaService->getSale($id, $user['id'], $user['rol'] === 'admin');
+
+            Response::success($venta->toArray());
+
+        }
+    }

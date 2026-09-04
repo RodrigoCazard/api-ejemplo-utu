@@ -110,3 +110,32 @@ INSERT INTO ventas (usuario_id, producto_id, cantidad, precio_unitario, total, e
 (2, 1, 1, 2450.00, 2450.00, 'confirmada'),
 (2, 2, 2,  890.00, 1780.00, 'confirmada'),
 (2, 5, 1, 3200.00, 3200.00, 'anulada');
+
+-- ======================================================================
+-- Tabla reviews
+-- ======================================================================
+-- Entidad nueva y minima: un usuario opina sobre un producto (1 a 5
+-- puntos + comentario opcional). Misma idea que "ventas": dos claves
+-- foraneas (usuario_id, producto_id) apuntando a tablas que ya existen.
+-- ----------------------------------------------------------------------
+CREATE TABLE reviews (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id  INT NOT NULL,
+    producto_id INT NOT NULL,
+    puntuacion  INT NOT NULL,
+    comentario  TEXT,
+    fecha       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_reviews_usuario
+        FOREIGN KEY (usuario_id) REFERENCES usuarios (id),
+
+    CONSTRAINT fk_reviews_producto
+        FOREIGN KEY (producto_id) REFERENCES productos (id)
+);
+
+-- 'puntuacion' va de 1 a 5: la validacion de ese rango se hace en el
+-- Controller/Service (como el resto del curso), no con un CHECK en la
+-- base.
+INSERT INTO reviews (usuario_id, producto_id, puntuacion, comentario) VALUES
+(2, 1, 5, 'Excelente teclado, se siente muy solido.'),
+(2, 3, 3, 'El monitor esta bien pero esperaba mejor calidad de imagen.');

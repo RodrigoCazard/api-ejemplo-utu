@@ -48,7 +48,7 @@
  */
 class ProductController
 {
-    private ProductService $service;
+    private ProductService $productService;
 
     /**
      * El controller USA un service, y el service usa un repository.
@@ -56,7 +56,7 @@ class ProductController
      */
     public function __construct()
     {
-        $this->service = new ProductService();
+        $this->productService = new ProductService();
     }
 
     /**
@@ -70,7 +70,7 @@ class ProductController
         // Lo que viene despues del "?" esta en $_GET.
         $category = $_GET['categoria'] ?? null;
 
-        $products = $this->service->getAll($category);
+        $products = $this->productService->getAll($category);
 
         Response::success($products);
     }
@@ -80,7 +80,7 @@ class ProductController
     {
         $id = $this->validateId($id);
 
-        $product = $this->service->getById($id);
+        $product = $this->productService->getById($id);
 
         Response::success($product);
     }
@@ -130,7 +130,7 @@ class ProductController
         }
 
         // ---- Y ACA LE PASAMOS LA PELOTA AL SERVICE ---------------
-        $product = $this->service->create(
+        $product = $this->productService->create(
             trim($name),
             trim($description),
             (float) $price,
@@ -211,7 +211,7 @@ class ProductController
             $data['categoria'] = trim($data['categoria']);
         }
 
-        $product = $this->service->update($id, $data);
+        $product = $this->productService->update($id, $data);
 
         Response::success($product, 'Producto actualizado.');
     }
@@ -226,7 +226,7 @@ class ProductController
 
         $id = $this->validateId($id);
 
-        $this->service->delete($id);
+        $this->productService->delete($id);
 
         Response::success(null, 'Producto eliminado.');
     }
@@ -251,7 +251,7 @@ class ProductController
             Response::error('La cantidad tiene que ser un entero mayor o igual a 1.', 400);
         }
 
-        $sale = $this->service->sell($id, (int) $quantity);
+        $sale = $this->productService->sell($id, (int) $quantity);
 
         Response::success($sale, 'Venta registrada.');
     }

@@ -18,11 +18,11 @@
  */
 class AuthController
 {
-    private AuthService $service;
+    private AuthService $authService;
 
     public function __construct()
     {
-        $this->service = new AuthService();
+        $this->authService = new AuthService();
     }
 
     /**
@@ -62,7 +62,7 @@ class AuthController
 
         // Si el email ya existe o no, lo decide el SERVICE:
         // para saberlo hay que ir a buscar a la base.
-        $user = $this->service->register(trim($name), trim($email), $password);
+        $user = $this->authService->register(trim($name), trim($email), $password);
 
         Response::success($user, 'Cuenta creada.', 201);
     }
@@ -83,7 +83,7 @@ class AuthController
             Response::error('Faltan el email o la contrasena.', 400);
         }
 
-        $session = $this->service->login(trim($email), $password);
+        $session = $this->authService->login(trim($email), $password);
 
         Response::success($session, 'Sesion iniciada. Guarda el token y mandalo en cada pedido.');
     }
@@ -97,7 +97,7 @@ class AuthController
         // Si no hay token valido, este metodo corta aca con un 401.
         $tokenData = requireLogin();
 
-        $user = $this->service->getProfile($tokenData['id']);
+        $user = $this->authService->getProfile($tokenData['id']);
 
         Response::success($user);
     }

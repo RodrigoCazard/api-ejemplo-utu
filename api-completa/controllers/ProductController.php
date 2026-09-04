@@ -52,7 +52,7 @@
  */
 class ProductController extends Controller
 {
-    private ProductService $service;
+    private ProductService $productService;
 
     /**
      * El controller USA un service, y el service usa un repository.
@@ -60,7 +60,7 @@ class ProductController extends Controller
      */
     public function __construct()
     {
-        $this->service = new ProductService();
+        $this->productService = new ProductService();
     }
 
     /**
@@ -84,7 +84,7 @@ class ProductController extends Controller
             Response::error('Revisá los datos.', 400, $errors);
         }
 
-        $products = $this->service->getAll($category);
+        $products = $this->productService->getAll($category);
 
         Response::success($products);
     }
@@ -98,7 +98,7 @@ class ProductController extends Controller
             Response::error('Revisá los datos.', 400, $errors);
         }
 
-        $product = $this->service->getById($id);
+        $product = $this->productService->getById($id);
 
         Response::success($product);
     }
@@ -121,7 +121,7 @@ class ProductController extends Controller
         $dto = new CreateProductDTO($data);
 
         // El service recibe el DTO y se ocupa de las reglas de negocio.
-        $product = $this->service->create($dto);
+        $product = $this->productService->create($dto);
 
         Response::success($product, 'Producto creado.', 201);
     }
@@ -144,7 +144,7 @@ class ProductController extends Controller
         // Este DTO conserva solamente los campos que el cliente quiere cambiar.
         $dto = new UpdateProductDTO($data);
 
-        $product = $this->service->update($id, $dto);
+        $product = $this->productService->update($id, $dto);
 
         Response::success($product, 'Producto actualizado.');
     }
@@ -160,7 +160,7 @@ class ProductController extends Controller
             Response::error('Revisá los datos.', 400, $errors);
         }
 
-        $this->service->delete($id);
+        $this->productService->delete($id);
 
         Response::success(null, 'Producto eliminado.');
     }
@@ -186,7 +186,7 @@ class ProductController extends Controller
         // SellProductDTO lleva una cantidad entera hasta el service.
         $dto = new SellProductDTO($data);
 
-        $sale = $this->service->sell($id, $dto);
+        $sale = $this->productService->sell($id, $dto);
 
         Response::success($sale, 'Venta registrada.');
     }

@@ -9,7 +9,7 @@
  * regla de negocio de SU endpoint. No borren ni modifiquen el metodo
  * de otro grupo.
  *
- * Ya tienen disponibles $this->repository (VentaRepository) y
+ * Ya tienen disponibles $this->ventaRepository (VentaRepository) y
  * $this->productRepository (ProductRepository, para leer o
  * actualizar el stock del producto vendido). Miren
  * services/ProductService.php como espejo: fijense sobre todo en
@@ -19,12 +19,12 @@
  */
 class VentaService
 {
-    private VentaRepository $repository;
+    private VentaRepository $ventaRepository;
     private ProductRepository $productRepository;
 
     public function __construct()
     {
-        $this->repository = new VentaRepository();
+        $this->ventaRepository = new VentaRepository();
         $this->productRepository = new ProductRepository();
     }
 
@@ -49,4 +49,21 @@ class VentaService
     //   getSummary() -> GET /ventas/resumen (solo junta y devuelve lo
     //       que ya calculo VentaRepository::getTotals())
     // ------------------------------------------------------------------
+
+
+    public function getSale($id, $userId, $isAdmin)
+    {
+        $venta = $this->ventaRepository->findById($id);
+
+        if ($venta === null) {
+            Response::error('Venta no encontrada.', 404);
+        }
+
+        // Solo el dueño de la venta o un admin pueden verla.
+        if (!$isAdmin && $venta->getUserId() !== $userId) {
+            Response::error('No tenes permiso para ver esta venta.', 403);
+        }
+
+        return $venta;
+    }
 }

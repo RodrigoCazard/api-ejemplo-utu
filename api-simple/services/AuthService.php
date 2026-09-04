@@ -13,11 +13,11 @@
  */
 class AuthService
 {
-    private UserRepository $repository;
+    private UserRepository $userRepository;
 
     public function __construct()
     {
-        $this->repository = new UserRepository();
+        $this->userRepository = new UserRepository();
     }
 
     /**
@@ -26,7 +26,7 @@ class AuthService
     public function register($name, $email, $password)
     {
         // REGLA: el email es unico.
-        if ($this->repository->findByEmail($email) !== null) {
+        if ($this->userRepository->findByEmail($email) !== null) {
             Response::error('Ya existe una cuenta con ese email.', 400);
         }
 
@@ -42,7 +42,7 @@ class AuthService
          */
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
-        $user = $this->repository->create($name, $email, $passwordHash);
+        $user = $this->userRepository->create($name, $email, $passwordHash);
 
         return $user->toArray();
     }
@@ -52,7 +52,7 @@ class AuthService
      */
     public function login($email, $password)
     {
-        $user = $this->repository->findByEmail($email);
+        $user = $this->userRepository->findByEmail($email);
 
         /**
          * DETALLE DE SEGURIDAD:
@@ -81,7 +81,7 @@ class AuthService
      */
     public function getProfile($id)
     {
-        $user = $this->repository->findById($id);
+        $user = $this->userRepository->findById($id);
 
         if ($user === null) {
             Response::error('El usuario ya no existe.', 404);

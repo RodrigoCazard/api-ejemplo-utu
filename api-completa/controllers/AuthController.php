@@ -19,11 +19,11 @@
  */
 class AuthController extends Controller
 {
-    private AuthService $service;
+    private AuthService $authService;
 
     public function __construct()
     {
-        $this->service = new AuthService();
+        $this->authService = new AuthService();
     }
 
     /**
@@ -47,7 +47,7 @@ class AuthController extends Controller
         $dto = new RegisterDTO($data);
 
         // El service recibe un objeto claro, no el arreglo HTTP crudo.
-        $user = $this->service->register($dto);
+        $user = $this->authService->register($dto);
 
         Response::success($user, 'Cuenta creada.', 201);
     }
@@ -71,7 +71,7 @@ class AuthController extends Controller
         $dto = new LoginDTO($data);
 
         // $session contiene temporalmente el JWT y los datos públicos del usuario.
-        $session = $this->service->login($dto);
+        $session = $this->authService->login($dto);
 
         // sendCookie() genera la cabecera HTTP Set-Cookie antes de enviar el JSON.
         Token::sendCookie($session['token']);
@@ -102,7 +102,7 @@ class AuthController extends Controller
      */
     public function profile($id = null)
     {
-        $user = $this->service->getProfile($this->user()['id']);
+        $user = $this->authService->getProfile($this->user()['id']);
 
         Response::success($user);
     }
