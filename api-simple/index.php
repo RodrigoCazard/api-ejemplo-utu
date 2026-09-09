@@ -236,9 +236,6 @@ try {
         //     break;
 
         // ---- Reviews (entidad nueva minima, mismo espiritu que Ventas) ----
-        // Esqueleto listo (tabla + Model + Repository/Service/Controller
-        // vacios): descomentar cuando los metodos de ReviewController ya
-        // existan.
 
         // case $method === 'GET' && $count === 3 && $parts[0] === 'productos' && $parts[2] === 'reviews':
         //     // GET /productos/3/reviews  ->  $parts[1] es el id del producto ('3')

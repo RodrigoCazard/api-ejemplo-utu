@@ -92,6 +92,7 @@ CREATE TABLE ventas (
     cantidad         INT NOT NULL,
     precio_unitario  DECIMAL(10, 2) NOT NULL,
     total            DECIMAL(10, 2) NOT NULL,
+    --el estado puede ser confirmada o anulada. Si es anulada, el stock del producto se devuelve.
     estado           VARCHAR(20) NOT NULL DEFAULT 'confirmada',
     fecha            DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

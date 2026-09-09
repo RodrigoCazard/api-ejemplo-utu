@@ -23,6 +23,40 @@ class ReviewRepository extends Repository
     // Agregar aca listReviewsByProduct() y create()
     // ------------------------------------------------------------------
 
+    public function listReviewsByProduct($productId)
+    {
+        $sql = 'SELECT * FROM reviews WHERE producto_id = :productId';
+
+        $query = $this->db->prepare($sql);
+        $query->execute([':productId' => $productId]);
+        $rows = $query->fetchAll();
+
+        $data = array_map([$this, 'buildReview'], $rows);
+
+        if (empty($data)) {
+            return [];
+        }
+        return $data;
+    }
+
+    public function createReview($userId, $productId, $score, $comment)
+    {
+        $sql = 'INSERT INTO reviews (usuario_id, producto_id, puntuacion, comentario) VALUES (:userId, :productId, :score, :comment)';
+
+        $query = $this->db->prepare($sql);
+        $query->execute([
+            ':userId' => $userId,
+            ':productId' => $productId,
+            ':score' => $score,
+            ':comment' => $comment
+        ]);
+
+        // Obtener el ID de la review recién creada
+        $reviewId = $this->db->lastInsertId();
+
+        // Devolver la review recién creada como objeto Review
+        return new Review($reviewId, $userId, $productId, $score, $comment, date('Y-m-d H:i:s'));
+    }
 
     /** De fila de la base (arreglo) a OBJETO Review. Ya esta resuelto. */
     private function buildReview($row)
