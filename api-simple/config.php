@@ -154,6 +154,7 @@ define('TOKEN_LIFETIME', (int) env('TOKEN_LIFETIME', 3600));
  * tablas con estos mismos datos.
  */
 define('DB_HOST', env('DB_HOST', 'localhost'));
+define('DB_PORT', (int) env('DB_PORT', 3306));
 define('DB_NAME', env('DB_NAME', 'utu_demo'));
 define('DB_USER', env('DB_USER', 'root'));
 define('DB_PASSWORD', env('DB_PASSWORD', ''));

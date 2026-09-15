@@ -1,8 +1,8 @@
 -- ======================================================================
 -- database.sql
 -- ======================================================================
--- Crea la base, las tablas de la API (usuarios, productos) y la tabla
--- del ejercicio grupal "ventas" (ver docs/ejercicio-nueva-entidad.md).
+-- Crea la base, todas las tablas (usuarios, productos, ventas y reviews)
+-- y los datos de ejemplo. No hace falta ejecutar otros archivos SQL.
 --
 -- Cómo importarlo:
 --
@@ -13,11 +13,9 @@
 -- Si tu base, usuario o contraseña son distintos a los de .env.example,
 -- acordate de actualizar tu .env (DB_HOST, DB_NAME, DB_USER, DB_PASSWORD).
 --
--- Si ya habias importado una version anterior de este archivo (sin la
--- tabla ventas), volve a importarlo desde cero para que se agregue:
---
---   DROP DATABASE utu_demo;    (borra la base vieja)
---   mysql -u root -p < database.sql
+-- Para probar con el esquema actualizado, borrar la base de prueba anterior
+-- e importar este archivo desde cero (ver README.md). Eso elimina sus datos.
+-- migrations/README.md explica cuando conviene usar migraciones.
 -- ======================================================================
 
 CREATE DATABASE IF NOT EXISTS utu_demo
@@ -92,7 +90,7 @@ CREATE TABLE ventas (
     cantidad         INT NOT NULL,
     precio_unitario  DECIMAL(10, 2) NOT NULL,
     total            DECIMAL(10, 2) NOT NULL,
-    --el estado puede ser confirmada o anulada. Si es anulada, el stock del producto se devuelve.
+    -- El estado puede ser confirmada o anulada. Si es anulada, el stock del producto se devuelve.
     estado           VARCHAR(20) NOT NULL DEFAULT 'confirmada',
     fecha            DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

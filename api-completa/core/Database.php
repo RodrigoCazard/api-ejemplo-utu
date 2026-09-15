@@ -39,7 +39,7 @@ class Database
     public static function connection(): PDO
     {
         if (self::$connection === null) {
-            $dsn = 'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4';
+            $dsn = 'mysql:host=' . DB_HOST . ';port=' . DB_PORT . ';dbname=' . DB_NAME . ';charset=utf8mb4';
 
             self::$connection = new PDO($dsn, DB_USER, DB_PASSWORD, [
                 /**

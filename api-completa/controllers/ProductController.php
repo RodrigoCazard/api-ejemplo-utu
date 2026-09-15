@@ -188,6 +188,6 @@ class ProductController extends Controller
 
         $sale = $this->productService->sell($id, $dto);
 
-        Response::success($sale, 'Venta registrada.');
+        Response::success($sale, 'Stock descontado.');
     }
 }

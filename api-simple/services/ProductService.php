@@ -142,7 +142,16 @@ class ProductService
             );
         }
 
-        $this->productRepository->delete($id);
+        try {
+            $this->productRepository->delete($id);
+        } catch (PDOException $exception) {
+            // MySQL 1451: una venta o review conserva una referencia al producto.
+            if (($exception->errorInfo[1] ?? null) === 1451) {
+                Response::error('No se puede borrar: el producto tiene ventas o reviews asociadas.', 409);
+            }
+
+            throw $exception;
+        }
     }
 
     /**
@@ -166,7 +175,7 @@ class ProductService
         }
 
         // Regla 2: hay que vender al menos una unidad.
-        if (!is_numeric($quantity) || $quantity < 1) {
+        if (filter_var($quantity, FILTER_VALIDATE_INT) === false || $quantity < 1) {
             Response::error('La cantidad tiene que ser 1 o mas.', 400);
         }
 
@@ -178,14 +187,17 @@ class ProductService
             );
         }
 
-        // Si paso todas las reglas: descontamos y guardamos.
-        $product->setStock($product->getStock() - $quantity);
+        // La condicion se comprueba tambien al escribir, por si otro pedido vendio antes.
+        if (!$this->productRepository->decreaseStock($id, (int) $quantity)) {
+            Response::error('No hay stock suficiente para completar la venta.', 400);
+        }
 
-        $this->productRepository->update($product);
+        $total = round($quantity * $product->getPrice(), 2);
+        $product = $this->productRepository->findById($id);
 
         return [
             'vendidas'      => (int) $quantity,
-            'total_a_pagar' => $quantity * $product->getPrice(),
+            'total_a_pagar' => $total,
             'producto'      => $product->toArray(),
         ];
     }

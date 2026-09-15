@@ -348,7 +348,7 @@ Con MySQL corriendo (en Laragon/XAMPP se prende desde su panel), importa `databa
 **Por linea de comandos:**
 
 ```powershell
-mysql -u root -p < database.sql
+Get-Content -Encoding utf8 database.sql | mysql -u root -p
 ```
 
 Va a pedir la contrasena del usuario `root` de MySQL. Si nunca la configuraste (comun en instalaciones locales tipo Laragon), probablemente sea vacia: apreta Enter sin escribir nada.
@@ -362,14 +362,25 @@ Va a pedir la contrasena del usuario `root` de MySQL. Si nunca la configuraste (
 
 Cualquiera de las dos opciones crea la base `utu_demo`, sus tablas, y carga los datos de prueba.
 
-**Si ya tenias la base creada de antes y `database.sql` cambio** (por ejemplo, trajiste cambios nuevos con `git pull` y aparecieron tablas o columnas que todavia no tenes), hay que volver a importarla para que los cambios entren. MySQL no actualiza una base ya creada solo con volver a correr el archivo: hay que borrarla primero.
+**Para probar la API con el esquema actualizado, borra la base de prueba anterior y creala desde cero.** `database.sql` incluye usuarios, productos, ventas, reviews y todos los datos de ejemplo. En PowerShell:
 
 ```powershell
-mysql -u root -p -e "DROP DATABASE utu_demo;"
-mysql -u root -p < database.sql
+mysql -u root -p -e "DROP DATABASE IF EXISTS utu_demo;"
+Get-Content -Encoding utf8 database.sql | mysql -u root -p
 ```
 
-`DROP DATABASE` borra la base entera, incluido cualquier dato que hayas creado o modificado a mano (usuarios, productos nuevos, etc.). Los datos de ejemplo se cargan solos al reimportar.
+Esto borra todos los datos anteriores, incluidos los usuarios y productos que hayas creado. En phpMyAdmin, elimina la base `utu_demo` y luego importa `database.sql`. Si usas otro nombre de base o puerto, ajusta el nombre en el SQL y agrega `-P PUERTO` al comando de MySQL.
+
+En Docker, `database.sql` se ejecuta solamente al crear el volumen por primera vez. Para borrar la base de prueba y cargar todo desde cero, desde esta carpeta:
+
+```powershell
+docker compose down -v
+docker compose up --build
+```
+
+`down -v` elimina los datos guardados en el volumen. La carpeta `migrations` conserva solamente un [archivo explicativo](migrations/README.md); no se usa para levantar ni actualizar esta API de prueba.
+
+Las tablas `ventas` y `reviews` tienen claves foraneas: `usuario_id` y `producto_id` deben existir en `usuarios` y `productos`. Un producto con historial no se puede borrar: la API responde `409` cuando MySQL rechaza esa eliminacion. `POST /productos/{id}/vender` solamente descuenta stock; el registro del historial en `ventas` corresponde al ejercicio. Las rutas del ejercicio siguen comentadas hasta implementar sus metodos.
 
 #### Paso 3: Crear el archivo `.env`
 
@@ -388,6 +399,7 @@ Ahora abri el `.env` recien creado con un editor de texto (VS Code, Notepad++, e
 | `SECRET_KEY` | Una clave al azar, nunca la de ejemplo. Generala corriendo `php -r "echo bin2hex(random_bytes(32));"` y pegando el resultado |
 | `APP_ENV` | `development` mientras estas aprendiendo/probando en tu maquina |
 | `DB_HOST` | `localhost` (dejalo asi salvo que tu MySQL corra en otro lado) |
+| `DB_PORT` | `3306` por defecto. Si PHP local conecta al MySQL de Docker de simple, usar `3307` |
 | `DB_NAME` | `utu_demo` (tiene que coincidir con lo que creo `database.sql`) |
 | `DB_USER` | El usuario de tu MySQL, normalmente `root` en instalaciones locales |
 | `DB_PASSWORD` | La contrasena de ese usuario. Vacio si no le pusiste ninguna |
@@ -397,6 +409,8 @@ Si `SECRET_KEY` queda vacia o igual al valor de ejemplo, la API se niega a arran
 El `.env` no se sube a Git: cada uno tiene el suyo, con sus propios datos.
 
 #### Paso 4: Instalar las dependencias
+
+PHP necesita las extensiones `pdo_mysql` y `mbstring` (esta ultima cuenta los caracteres de texto UTF-8 al validar los limites de la base). La imagen Docker ya las instala. En PHP local podes comprobarlas con `php -m`.
 
 ```powershell
 composer install

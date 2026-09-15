@@ -56,6 +56,14 @@ class AuthValidator
             $errors[] = 'La contraseña tiene que tener al menos 6 caracteres.';
         }
 
+        if (is_string($name) && mb_strlen(trim($name), 'UTF-8') > 100) {
+            $errors[] = 'El nombre no puede superar 100 caracteres.';
+        }
+
+        if (is_string($email) && mb_strlen(trim($email), 'UTF-8') > 150) {
+            $errors[] = 'El email no puede superar 150 caracteres.';
+        }
+
         // Si todo estaba bien devuelve []; si no, devuelve todos los mensajes.
         return $errors;
     }

@@ -43,7 +43,11 @@ class VentaController
         {
             $user = requireLogin();
 
-            $venta = $this->ventaService->getSale($id, $user['id'], $user['rol'] === 'admin');
+            if (filter_var($id, FILTER_VALIDATE_INT) === false || $id < 1) {
+                Response::error('El ID de la venta no es valido.', 400);
+            }
+
+            $venta = $this->ventaService->getSale((int) $id, $user['id'], $user['rol'] === 'admin');
 
             Response::success($venta->toArray());
 

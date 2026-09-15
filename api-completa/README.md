@@ -42,7 +42,7 @@ No usa Laravel ni otro framework. La idea es ver las piezas con PHP simple antes
 api-completa/
   index.php                 entrada de la API
   routes.php                mapa de rutas
-  config.php                lee configuracion y .env
+  config.php                lee configuracion y .env con phpdotenv
   database.sql              crea tablas y datos de prueba
   core/
     Router.php              enrutador
@@ -192,7 +192,7 @@ Con MySQL corriendo, importa `database.sql`. Elegi una alternativa:
 **Por linea de comandos:**
 
 ```powershell
-mysql -u root -p < database.sql
+Get-Content -Encoding utf8 database.sql | mysql -u root -p
 ```
 
 Si nunca configuraste una contrasena para `root` (comun en instalaciones locales tipo Laragon), apreta Enter sin escribir nada.
@@ -208,7 +208,7 @@ Si nunca configuraste una contrasena para `root` (comun en instalaciones locales
 
 ```powershell
 mysql -u root -p -e "DROP DATABASE utu_demo;"
-mysql -u root -p < database.sql
+Get-Content -Encoding utf8 database.sql | mysql -u root -p
 ```
 
 `DROP DATABASE` borra la base entera, incluido cualquier dato que hayas creado o modificado a mano. Los datos de ejemplo se cargan solos al reimportar.
@@ -226,6 +226,7 @@ Abrila con un editor de texto y revisa:
 | `SECRET_KEY` | Una clave al azar, nunca la de ejemplo. Generala con `php -r "echo bin2hex(random_bytes(32));"` |
 | `APP_ENV` | `development` mientras estas aprendiendo/probando en tu maquina |
 | `DB_HOST` | `localhost` |
+| `DB_PORT` | `3306` por defecto. Si PHP local conecta al MySQL de Docker de completa, usar `3308` |
 | `DB_NAME` | `utu_demo` |
 | `DB_USER` | El usuario de tu MySQL, normalmente `root` |
 | `DB_PASSWORD` | La contrasena de ese usuario. Vacio si no tiene |
@@ -233,9 +234,15 @@ Abrila con un editor de texto y revisa:
 
 Si `SECRET_KEY` queda vacia o igual al valor de ejemplo, la API se niega a arrancar a proposito.
 
+`config.php` usa `vlucas/phpdotenv`, instalada con Composer, para cargar `.env` en `$_ENV` y `$_SERVER`. El helper `env()` tambien lee las variables del proceso con `getenv()`. Las variables configuradas en el entorno no se sobrescriben al cargar el archivo, por lo que Docker puede proporcionar la configuracion sin un `.env` dentro del container.
+
+Los controllers y services siguen usando constantes como `SECRET_KEY` y `DB_NAME`, definidas en `config.php`. Para una variable adicional podes usar `env('MI_VARIABLE', 'valor_por_defecto')`. Esta version no copia los valores del archivo a `getenv()` mediante `putenv()`; usa `env()` o las constantes.
+
 El `.env` no se sube a Git.
 
 #### Paso 4: Instalar las dependencias
+
+PHP necesita las extensiones `pdo_mysql` y `mbstring` para conectar a MySQL y validar los limites de texto UTF-8. La imagen Docker ya las instala. En PHP local podes comprobarlas con `php -m`.
 
 ```powershell
 composer install

@@ -51,11 +51,12 @@ class ReviewRepository extends Repository
             ':comment' => $comment
         ]);
 
-        // Obtener el ID de la review recién creada
-        $reviewId = $this->db->lastInsertId();
+        // Leer la fila guardada: la fecha la genera MySQL, no el reloj de PHP.
+        $reviewId = (int) $this->db->lastInsertId();
+        $query = $this->db->prepare('SELECT * FROM reviews WHERE id = :id');
+        $query->execute([':id' => $reviewId]);
 
-        // Devolver la review recién creada como objeto Review
-        return new Review($reviewId, $userId, $productId, $score, $comment, date('Y-m-d H:i:s'));
+        return $this->buildReview($query->fetch());
     }
 
     /** De fila de la base (arreglo) a OBJETO Review. Ya esta resuelto. */

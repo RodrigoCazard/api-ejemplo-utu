@@ -131,6 +131,18 @@ class ProductRepository extends Repository
         return $product;
     }
 
+    /** Descuenta stock en una sola consulta, incluso con pedidos simultaneos. */
+    public function decreaseStock($id, $quantity): bool
+    {
+        $query = $this->db->prepare(
+            'UPDATE productos SET stock = stock - :cantidad
+             WHERE id = :id AND stock >= :minimo'
+        );
+        $query->execute([':cantidad' => $quantity, ':id' => $id, ':minimo' => $quantity]);
+
+        return $query->rowCount() === 1;
+    }
+
     /** DELETE: borra el producto con ese id. */
     public function delete($id)
     {

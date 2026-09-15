@@ -92,6 +92,14 @@ class ProductService
             Response::error('No existe el producto ' . $id, 404);
         }
 
+        if ($dto->has('nombre')) {
+            $sameName = $this->productRepository->findByName($dto->get('nombre'));
+
+            if ($sameName !== null && $sameName->getId() !== $product->getId()) {
+                Response::error('Ya existe un producto con ese nombre.', 400);
+            }
+        }
+
         // has() pregunta si el campo vino; get() obtiene su valor.
         // Solo tocamos lo que vino. Los setters protegen además al modelo.
         if ($dto->has('nombre')) {
@@ -140,7 +148,15 @@ class ProductService
             );
         }
 
-        $this->productRepository->delete($id);
+        try {
+            $this->productRepository->delete($id);
+        } catch (PDOException $exception) {
+            if (($exception->errorInfo[1] ?? null) === 1451) {
+                Response::error('No se puede borrar: el producto tiene registros asociados.', 409);
+            }
+
+            throw $exception;
+        }
     }
 
     /**
@@ -174,14 +190,16 @@ class ProductService
             );
         }
 
-        // Si pasó todas las reglas: descontamos y guardamos.
-        $product->setStock($product->getStock() - $quantity);
+        if (!$this->productRepository->decreaseStock($id, $quantity)) {
+            Response::error('No hay stock suficiente para completar la venta.', 400);
+        }
 
-        $this->productRepository->update($product);
+        $total = round($quantity * $product->getPrice(), 2);
+        $product = $this->productRepository->findById($id);
 
         return [
             'vendidas'      => (int) $quantity,
-            'total_a_pagar' => $quantity * $product->getPrice(),
+            'total_a_pagar' => $total,
             'producto'      => $product->toArray(),
         ];
     }

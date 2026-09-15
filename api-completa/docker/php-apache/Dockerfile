@@ -8,9 +8,9 @@ ARG DEBIAN_FRONTEND=noninteractive
 # pdo_mysql permite que PDO se conecte a MySQL. rewrite permite que
 # Apache envíe rutas como /productos/3 al index.php mediante .htaccess.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends unzip \
+    && apt-get install -y --no-install-recommends unzip libonig-dev \
     && rm -rf /var/lib/apt/lists/* \
-    && docker-php-ext-install pdo_mysql \
+    && docker-php-ext-install pdo_mysql mbstring \
     && a2enmod rewrite
 
 COPY --from=composer_binary /usr/bin/composer /usr/local/bin/composer

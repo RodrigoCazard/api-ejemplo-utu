@@ -32,83 +32,30 @@
  * JWT validos, incluso de administrador. Sacandola al .env, el
  * secreto vive solo en la computadora de cada uno.
  *
- * PHP no trae de fabrica un lector de .env (proyectos grandes usan
- * una libreria, "vlucas/phpdotenv"), pero el formato es tan simple
- * que alcanza con leer el archivo linea por linea. Eso es lo que
- * hace loadEnv() aca abajo.
+ * PHP no lee .env automaticamente. Esta version usa vlucas/phpdotenv
+ * para cargarlo; api-simple conserva un lector propio para aprender.
  * ==================================================================
  */
 
-/**
- * loadEnv(): LEE UN ARCHIVO .env LINEA POR LINEA
- * ==================================================================
- * Esta funcion es generica: no sabe nada de tokens ni de esta API en
- * particular, solo sabe leer archivos con formato "CLAVE=valor". Por
- * eso la pueden copiar y pegar tal cual al inicio de CUALQUIER otro
- * proyecto PHP que quieran armar, y ya van a tener soporte de .env.
- *
- * Lo que hace, paso a paso:
- *
- *   1. Si el archivo no existe, no hace nada (return) y listo. Asi
- *      el proyecto no explota si alguien todavia no creo su .env;
- *      simplemente van a valer los defaults que pusimos mas abajo.
- *
- *   2. file(...) lee el archivo y devuelve un arreglo con una linea
- *      por posicion. Los dos flags le piden que no incluya el salto
- *      de linea de cada renglon y que se salte las lineas vacias.
- *
- *   3. Por cada linea:
- *        - si empieza con "#", es un comentario: la ignoramos.
- *        - si no, la partimos en dos por el PRIMER "=" que aparece
- *          (el limite 2 de explode() es justamente para eso: si el
- *          VALOR tuviera un "=" adentro, no se rompe el parseo).
- *
- *   4. putenv() y $_ENV son dos formas que tiene PHP de guardar una
- *      variable de entorno. Las llenamos las DOS por compatibilidad:
- *      segun como este configurado el servidor, getenv() puede leer
- *      de una o de la otra. Guardando en ambas, siempre funciona.
- *
- * Despues de llamar a loadEnv() una sola vez (ver la linea de abajo),
- * cualquier archivo del proyecto puede leer esos valores con
- * getenv('SECRET_KEY'), o mejor, con el helper env() que definimos
- * a continuacion.
- *
- * @param string $path ruta al archivo .env
- */
-function loadEnv(string $path): void
-{
-    if (!file_exists($path)) {
-        return;
-    }
+// Composer tambien se carga aca para poder ejecutar config.php desde scripts CLI.
+require_once __DIR__ . '/vendor/autoload.php';
 
-    foreach (file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
-        $line = trim($line);
+// Los adaptadores por defecto leen/escriben $_SERVER y $_ENV.
+// Agregamos getenv() SOLO como lector para respetar las variables del proceso
+// (por ejemplo, las de Docker), sin escribirlas con putenv().
+$environmentRepository = Dotenv\Repository\RepositoryBuilder::createWithDefaultAdapters()
+    ->addReader(Dotenv\Repository\Adapter\PutenvAdapter::class)
+    ->immutable()
+    ->make();
 
-        if ($line === '' || str_starts_with($line, '#')) {
-            continue;
-        }
+// immutable() conserva las variables existentes. safeLoad() permite ejecutar
+// sin archivo .env cuando la configuracion viene del servidor o de Docker.
+Dotenv\Dotenv::create($environmentRepository, __DIR__)->safeLoad();
 
-        [$key, $value] = array_pad(explode('=', $line, 2), 2, '');
-
-        $key   = trim($key);
-        $value = trim($value);
-
-        putenv("$key=$value");
-        $_ENV[$key] = $value;
-    }
-}
-
-// La llamamos UNA vez, apenas arranca la app, antes de leer ninguna
-// variable. A partir de aca, getenv() ya "conoce" todo lo del .env.
-loadEnv(__DIR__ . '/.env');
-
-/**
- * env(): lee una variable del .env, y si no esta, usa un valor por
- * defecto. Asi ningun define() de abajo se rompe aunque falte el .env.
- */
+/** Lee la configuracion del entorno o del .env, con un valor por defecto. */
 function env(string $key, $default = null)
 {
-    $value = getenv($key);
+    $value = $_SERVER[$key] ?? $_ENV[$key] ?? getenv($key);
 
     return $value === false || $value === '' ? $default : $value;
 }
@@ -162,7 +109,7 @@ define('FRONTEND_ORIGIN', rtrim(env('FRONTEND_ORIGIN', 'http://localhost:5173'),
  * tablas con estos mismos datos.
  */
 define('DB_HOST', env('DB_HOST', 'localhost'));
+define('DB_PORT', (int) env('DB_PORT', 3306));
 define('DB_NAME', env('DB_NAME', 'utu_demo'));
 define('DB_USER', env('DB_USER', 'root'));
 define('DB_PASSWORD', env('DB_PASSWORD', ''));
-

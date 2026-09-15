@@ -35,6 +35,7 @@ services:
       SECRET_KEY: ${SECRET_KEY:-a1b2c3d4e5f6470b9c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b}
       TOKEN_LIFETIME: ${TOKEN_LIFETIME:-3600}
       DB_HOST: database
+      DB_PORT: 3306
       DB_NAME: utu_demo
       DB_USER: utu_user
       DB_PASSWORD: ${DB_PASSWORD:-utu_password}

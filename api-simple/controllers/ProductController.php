@@ -70,6 +70,10 @@ class ProductController
         // Lo que viene despues del "?" esta en $_GET.
         $category = $_GET['categoria'] ?? null;
 
+        if ($category !== null && (!is_string($category) || trim($category) === '')) {
+            Response::error('La categoria no es valida.', 400);
+        }
+
         $products = $this->productService->getAll($category);
 
         Response::success($products);
@@ -128,6 +132,8 @@ class ProductController
         if (count($errors) > 0) {
             Response::error('Revisa los datos.', 400, $errors);
         }
+
+        $this->validateStorageLimits($data);
 
         // ---- Y ACA LE PASAMOS LA PELOTA AL SERVICE ---------------
         $product = $this->productService->create(
@@ -189,6 +195,8 @@ class ProductController
         if (count($errors) > 0) {
             Response::error('Revisa los datos.', 400, $errors);
         }
+
+        $this->validateStorageLimits($data);
 
         // Despues de validar, normalizamos y tipamos solamente lo recibido.
         if (array_key_exists('nombre', $data)) {
@@ -253,13 +261,39 @@ class ProductController
 
         $sale = $this->productService->sell($id, (int) $quantity);
 
-        Response::success($sale, 'Venta registrada.');
+        Response::success($sale, 'Stock descontado.');
     }
 
-    /**
-     * Valida los IDs de la URL sin crear todavia una clase Validator.
-     * Devuelve el ID como int para que el service reciba un tipo conocido.
-     */
+    /** Rechaza valores que no caben en las columnas de MySQL. */
+    private function validateStorageLimits(array $data): void
+    {
+        $errors = [];
+
+        foreach (['nombre' => 150, 'categoria' => 50] as $field => $limit) {
+            if (isset($data[$field]) && mb_strlen(trim($data[$field]), 'UTF-8') > $limit) {
+                $errors[] = "El campo $field no puede superar $limit caracteres.";
+            }
+        }
+
+        if (isset($data['descripcion']) && strlen(trim($data['descripcion'])) > 65535) {
+            $errors[] = 'La descripcion no puede superar 65535 bytes.';
+        }
+
+        if (isset($data['precio'])
+            && (!is_finite((float) $data['precio']) || $data['precio'] > 99999999.99)) {
+            $errors[] = 'El precio no puede superar 99999999.99.';
+        }
+
+        if (isset($data['stock']) && $data['stock'] > 2147483647) {
+            $errors[] = 'El stock no puede superar 2147483647.';
+        }
+
+        if ($errors !== []) {
+            Response::error('Revisa los datos.', 400, $errors);
+        }
+    }
+
+    /** Valida los IDs de la URL y los devuelve como int. */
     private function validateId($id): int
     {
         if (filter_var($id, FILTER_VALIDATE_INT) === false || $id < 1) {

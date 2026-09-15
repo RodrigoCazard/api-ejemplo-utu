@@ -71,7 +71,7 @@ class ProductValidator
             $errors[] = 'Falta la categoría.';
         }
 
-        return $errors;
+        return array_merge($errors, self::validateStorageLimits($data));
     }
 
     /**
@@ -121,7 +121,7 @@ class ProductValidator
             $errors[] = 'La categoría no puede estar vacía.';
         }
 
-        return $errors;
+        return array_merge($errors, self::validateStorageLimits($data));
     }
 
     /** Valida el {id} recibido en DELETE /productos/{id}. */
@@ -149,6 +149,34 @@ class ProductValidator
      * private significa que este método solo se usa dentro del validator.
      * Se reutiliza para no copiar la misma validación en show/update/etc.
      */
+    private static function validateStorageLimits(array $data): array
+    {
+        $errors = [];
+
+        foreach (['nombre' => 150, 'categoria' => 50] as $field => $limit) {
+            if (isset($data[$field]) && is_string($data[$field])
+                && mb_strlen(trim($data[$field]), 'UTF-8') > $limit) {
+                $errors[] = "El campo $field no puede superar $limit caracteres.";
+            }
+        }
+
+        if (isset($data['descripcion']) && is_string($data['descripcion'])
+            && strlen(trim($data['descripcion'])) > 65535) {
+            $errors[] = 'La descripcion no puede superar 65535 bytes.';
+        }
+
+        if (isset($data['precio']) && is_numeric($data['precio'])
+            && (!is_finite((float) $data['precio']) || $data['precio'] > 99999999.99)) {
+            $errors[] = 'El precio no puede superar 99999999.99.';
+        }
+
+        if (isset($data['stock']) && is_numeric($data['stock']) && $data['stock'] > 2147483647) {
+            $errors[] = 'El stock no puede superar 2147483647.';
+        }
+
+        return $errors;
+    }
+
     private static function validateId($id): array
     {
         if (filter_var($id, FILTER_VALIDATE_INT) === false || $id < 1) {
