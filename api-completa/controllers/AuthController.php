@@ -73,8 +73,10 @@ class AuthController extends Controller
         // $session contiene temporalmente el JWT y los datos públicos del usuario.
         $session = $this->authService->login($dto);
 
+        $token = $session['token'];
+
         // sendCookie() genera la cabecera HTTP Set-Cookie antes de enviar el JSON.
-        Token::sendCookie($session['token']);
+        Token::sendCookie($token);
 
         // unset() quita el JWT del arreglo: no queremos exponerlo a JavaScript.
         // El navegador ya lo recibió dentro de la cookie HttpOnly.

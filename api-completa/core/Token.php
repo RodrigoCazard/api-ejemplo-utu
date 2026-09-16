@@ -131,6 +131,7 @@ class Token
             'path'     => '/',
             // self::isHttps() llama a un método privado de esta misma clase.
             'secure'   => self::isHttps(),
+            //esto es lo mas importante, si no lo pones, el token se puede leer desde javascript y eso es un problema de seguridad
             'httponly' => true,
             'samesite' => 'Lax',
         ]);
