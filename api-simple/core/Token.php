@@ -143,6 +143,12 @@ class Token
 
         // decode() devuelve un objeto (stdClass) y en el resto del
         // proyecto trabajamos con arreglos, asi que lo convertimos.
+        // Tambien pueden devolver solo los datos necesarios para que este mas limpio como 
+    //        return [
+    //     'id'     => $payload->id,
+    //     'nombre' => $payload->nombre,
+    //     'rol'    => $payload->rol
+    // ];
         return (array) $payload;
     }
 

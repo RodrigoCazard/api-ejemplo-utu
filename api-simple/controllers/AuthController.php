@@ -93,6 +93,7 @@ class AuthController
 
         $session = $this->authService->login(trim($email), $password);
 
+        //este mensaje es para aprender, no debes exponer el token en la respuesta de un login real
         Response::success($session, 'Sesion iniciada. Guarda el token y mandalo en cada pedido.');
     }
 
