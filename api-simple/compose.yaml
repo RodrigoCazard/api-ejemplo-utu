@@ -45,5 +45,20 @@ services:
       database:
         condition: service_healthy
 
+  adminer:
+    # Adminer es solamente un cliente web: no crea ni duplica la base.
+    # Se conecta al mismo MySQL que usa la API por la red interna de Compose.
+    image: adminer:6
+    environment:
+      # Dentro de Docker, "database" es el hostname del servicio MySQL.
+      ADMINER_DEFAULT_SERVER: database
+    ports:
+      # Publica la interfaz web en http://localhost:8080.
+      - "${ADMINER_PORT:-8080}:8080"
+    depends_on:
+      # Espera a que MySQL este listo antes de iniciar el visualizador.
+      database:
+        condition: service_healthy
+
 volumes:
   mysql_data:

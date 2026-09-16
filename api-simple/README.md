@@ -267,6 +267,47 @@ Probar:
 http://localhost:8001/productos
 ```
 
+### Ver la base de datos con Adminer
+
+El mismo `docker compose up --build` tambien levanta Adminer, una interfaz
+visual para MySQL. Abrila en:
+
+```text
+http://localhost:8080
+```
+
+Completa el formulario con estos datos:
+
+| Campo | Valor |
+|---|---|
+| Sistema | `MySQL` |
+| Servidor | `database` |
+| Usuario | `utu_user` |
+| Contrasena | `utu_password` |
+| Base de datos | `utu_demo` |
+
+Desde ahi se pueden ver las tablas, recorrer filas y ejecutar consultas SQL.
+Los cambios hechos en Adminer se reflejan inmediatamente en la API, y los
+cambios hechos mediante la API aparecen al recargar Adminer.
+
+Adminer no crea otra base de datos ni guarda una copia. Es un cliente web que
+se conecta al mismo servicio `database` (MySQL) que usa la API. Los tres
+containers se comunican por la red interna que crea Docker Compose:
+
+```text
+navegador -> Adminer -> MySQL <- API
+```
+
+Por eso, editar o borrar una fila desde Adminer modifica los datos reales de
+esta API. Esos datos siguen guardados en el volumen `mysql_data` aunque se use
+`docker compose down`. Solo se eliminan al ejecutar `docker compose down -v`.
+
+Estas credenciales son las de demostracion que trae `compose.yaml`. Si las
+cambias en un archivo `.env`, usa en Adminer el nuevo valor de `DB_PASSWORD`.
+El puerto de Adminer tambien se puede cambiar con `ADMINER_PORT`. Este
+visualizador esta pensado para desarrollo y clases; no debe publicarse en un
+servidor de produccion.
+
 Comandos utiles, desde esta misma carpeta:
 
 ```powershell
