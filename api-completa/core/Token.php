@@ -133,6 +133,7 @@ class Token
             'secure'   => self::isHttps(),
             //esto es lo mas importante, si no lo pones, el token se puede leer desde javascript y eso es un problema de seguridad
             'httponly' => true,
+            //esto es para que el token no se envie en pedidos desde otros sitios, y asi evitar ataques CSRF
             'samesite' => 'Lax',
         ]);
     }
